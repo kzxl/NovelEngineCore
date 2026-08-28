@@ -54,6 +54,9 @@
         <button id="btn-test-model" class="btn btn-sm btn-test-glow" onclick="testSelectedModel()">
           ⚡ Test Model
         </button>
+        <button id="btn-global-stop" class="btn btn-sm btn-danger-glow hidden" onclick="stopActiveGeneration()">
+          🛑 Dừng Tiến Trình
+        </button>
       </div>
     </header>
 
@@ -318,6 +321,9 @@
             <div class="contract-actions">
               <button id="btn-generate-scene" class="btn btn-primary" onclick="generateScene()">
                 <span class="btn-icon">⚡</span> Kích Hoạt Bộ Shell Sinh Bản Thảo
+              </button>
+              <button id="btn-stop-draft" class="btn btn-danger hidden" onclick="stopActiveGeneration()">
+                🛑 Tạm Dừng / Hủy Sinh
               </button>
               <div id="status-indicator" class="status-indicator hidden">
                 <div class="spinner"></div>

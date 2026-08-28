@@ -220,6 +220,33 @@ body {
   box-shadow: 0 0 12px rgba(99, 102, 241, 0.4);
 }
 
+.btn-danger-glow {
+  background: rgba(244, 63, 94, 0.2);
+  border: 1px solid rgba(244, 63, 94, 0.5);
+  color: #fda4af;
+  font-size: 0.78rem;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  animation: pulse-border 1.5s infinite alternate ease-in-out;
+}
+
+.btn-danger-glow:hover {
+  background: rgba(244, 63, 94, 0.4);
+  color: #fff;
+  box-shadow: 0 0 14px rgba(244, 63, 94, 0.6);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #f43f5e 0%, #be123c 100%);
+  color: #fff;
+  box-shadow: 0 0 15px rgba(244, 63, 94, 0.4);
+}
+
+.btn-danger:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 25px rgba(244, 63, 94, 0.6);
+}
+
 /* Diagnostic Model Test Banner */
 .model-test-banner {
   background: #12172e;

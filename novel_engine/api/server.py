@@ -384,8 +384,25 @@ class DraftSceneRequest(BaseModel):
     generate_comic: bool = True
 
 
+import asyncio
+
+_active_generation_task: Optional[asyncio.Task] = None
+
+
+@app.post("/api/generation/stop")
+async def stop_active_generation():
+    """Immediately stops and cancels any active generation task to prevent hanging."""
+    global _active_generation_task
+    if _active_generation_task and not _active_generation_task.done():
+        _active_generation_task.cancel()
+        _active_generation_task = None
+        return {"status": "stopped", "message": "Đã hủy tiến trình sinh AI thành công!"}
+    return {"status": "idle", "message": "Không có tiến trình nào đang chạy."}
+
+
 @app.post("/api/scene/draft", response_model=SceneDraft)
 async def draft_scene(req: DraftSceneRequest):
+    global _active_generation_task
     engine = get_or_create_engine(model_name=req.provider_model)
     if not engine.state:
         await engine.initialize_story(
@@ -393,8 +410,16 @@ async def draft_scene(req: DraftSceneRequest):
             logline="Thiếu niên quật khởi",
             genre="Xianxia"
         )
-    draft = await engine.draft_scene(contract=req.contract)
-    return draft
+    
+    task = asyncio.create_task(engine.draft_scene(contract=req.contract))
+    _active_generation_task = task
+    try:
+        draft = await task
+        return draft
+    except asyncio.CancelledError:
+        raise HTTPException(status_code=499, detail="Tiến trình đã bị người dùng tạm dừng.")
+    finally:
+        _active_generation_task = None
 
 
 # ----------------------------------------------------------------------

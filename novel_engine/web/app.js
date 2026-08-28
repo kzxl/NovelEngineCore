@@ -741,12 +741,41 @@ function getWordCountLimits() {
   return { min_words: 800, max_words: 1400, target_words: 1100 };
 }
 
+let currentAbortController = null;
+
+function stopActiveGeneration() {
+  if (currentAbortController) {
+    currentAbortController.abort();
+    currentAbortController = null;
+  }
+  
+  // Call backend to ensure process cancels
+  fetch('/api/generation/stop', { method: 'POST' }).catch(() => {});
+
+  const btn = document.getElementById('btn-generate-scene');
+  const btnStopDraft = document.getElementById('btn-stop-draft');
+  const btnGlobalStop = document.getElementById('btn-global-stop');
+  const indicator = document.getElementById('status-indicator');
+  const proseOutput = document.getElementById('prose-output');
+
+  if (btn) { btn.disabled = false; btn.style.display = 'inline-flex'; }
+  if (btnStopDraft) btnStopDraft.classList.add('hidden');
+  if (btnGlobalStop) btnGlobalStop.classList.add('hidden');
+  if (indicator) indicator.classList.add('hidden');
+  
+  if (proseOutput) {
+    proseOutput.innerHTML = '<p style="color: #f59e0b;">⚠️ <strong>Đã dừng tiến trình:</strong> Bạn đã hủy lệnh sinh bản thảo. Hệ thống đã an toàn và không bị treo.</p>';
+  }
+}
+
 // ----------------------------------------------------------------------
 // 4. Novel Drafting Galaxy (Viết Truyện & Số Phận)
 // ----------------------------------------------------------------------
 
 async function generateScene() {
   const btn = document.getElementById('btn-generate-scene');
+  const btnStopDraft = document.getElementById('btn-stop-draft');
+  const btnGlobalStop = document.getElementById('btn-global-stop');
   const indicator = document.getElementById('status-indicator');
   const proseOutput = document.getElementById('prose-output');
   const auditBadge = document.getElementById('audit-badge');
@@ -755,11 +784,15 @@ async function generateScene() {
 
   const selectedModel = document.getElementById('model-select').value;
 
-  btn.disabled = true;
+  btn.style.display = 'none';
+  if (btnStopDraft) btnStopDraft.classList.remove('hidden');
+  if (btnGlobalStop) btnGlobalStop.classList.remove('hidden');
   indicator.classList.remove('hidden');
   auditBadge.classList.add('hidden');
   savedFileAlert.classList.add('hidden');
   proseOutput.innerHTML = `<p class="placeholder-text">⏳ Đang gọi model thực tế <strong>[${selectedModel}]</strong> để sinh văn bản tiểu thuyết...</p>`;
+
+  currentAbortController = new AbortController();
 
   const castSize = parseInt(document.getElementById('cast-size-select').value, 10);
   const spotlightChar = document.getElementById('spotlight-char-select').value;
@@ -796,7 +829,8 @@ async function generateScene() {
     const res = await fetch('/api/scene/draft', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
+      signal: currentAbortController ? currentAbortController.signal : undefined
     });
 
     if (res.ok) {
@@ -808,9 +842,17 @@ async function generateScene() {
       proseOutput.innerHTML = `<p style="color: #f43f5e;">❌ Lỗi khi sinh chương từ model [${selectedModel}]: ${JSON.stringify(err)}</p>`;
     }
   } catch (err) {
-    proseOutput.innerHTML = `<p style="color: #f43f5e;">❌ Lỗi kết nối tới AI Engine: ${err.message}</p>`;
+    if (err.name === 'AbortError') {
+      proseOutput.innerHTML = `<p style="color: #f59e0b;">⚠️ <strong>Đã tạm dừng:</strong> Tiến trình sinh chương đã được hủy theo lệnh của bạn.</p>`;
+    } else {
+      proseOutput.innerHTML = `<p style="color: #f43f5e;">❌ Lỗi kết nối tới AI Engine: ${err.message}</p>`;
+    }
   } finally {
+    currentAbortController = null;
+    btn.style.display = 'inline-flex';
     btn.disabled = false;
+    if (btnStopDraft) btnStopDraft.classList.add('hidden');
+    if (btnGlobalStop) btnGlobalStop.classList.add('hidden');
     indicator.classList.add('hidden');
   }
 }
