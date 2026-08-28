@@ -81,6 +81,9 @@ SCENE EXECUTION DIRECTIVE:
 STRICT NEGATIVE CONSTRAINTS (VIOLATIONS WILL BE REJECTED):
 {hard_constraints_text}
 
+LANGUAGE DIRECTIVE:
+Write strictly in Vietnamese (Tiếng Việt) using rich, expressive novel prose and natural dialogue.
+
 INSTRUCTIONS:
 Write vivid, immersive narrative prose following 'Show, Don't Tell'. 
 Dialogue must strictly reflect character status and vocabulary style. 

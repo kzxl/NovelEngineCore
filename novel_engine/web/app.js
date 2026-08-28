@@ -53,6 +53,7 @@ async function generateScene() {
         "Văn phong sắc sảo, dồn dập (Show, don't tell)."
       ]
     },
+    provider_model: document.getElementById('model-select').value,
     generate_comic: true
   };
 

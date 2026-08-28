@@ -18,6 +18,7 @@ from novel_engine.engine import NovelDirectorEngine
 from novel_engine.plugins.comic_storyboard_plugin import ComicStoryboardPlugin
 from novel_engine.plugins.continuity_audit_plugin import ContinuityAuditPlugin
 from novel_engine.adapters.mock_adapter import MockLLMAdapter
+from novel_engine.adapters.ollama_adapter import OllamaAdapter
 from novel_engine.adapters.litellm_adapter import LiteLLMAdapter
 
 app = FastAPI(
@@ -32,16 +33,20 @@ _engine: Optional[NovelDirectorEngine] = None
 
 def get_or_create_engine(model_name: str = "mock", api_key: Optional[str] = None, base_url: Optional[str] = None) -> NovelDirectorEngine:
     global _engine
-    if _engine is None:
-        if model_name == "mock":
-            adapter = MockLLMAdapter()
-        else:
-            adapter = LiteLLMAdapter(model_name=model_name, api_key=api_key, base_url=base_url)
+    
+    # Check if Ollama model
+    if model_name.startswith("ollama/") or "qwen" in model_name.lower() or "llama" in model_name.lower() and not api_key:
+        actual_model = model_name.replace("ollama/", "")
+        adapter = OllamaAdapter(model_name=actual_model, base_url=base_url or "http://localhost:11434")
+    elif model_name == "mock":
+        adapter = MockLLMAdapter()
+    else:
+        adapter = LiteLLMAdapter(model_name=model_name, api_key=api_key, base_url=base_url)
 
-        _engine = NovelDirectorEngine(adapter=adapter)
-        # Register Galaxy Plugins
-        _engine.register_plugin(ContinuityAuditPlugin(strict_mode=True))
-        _engine.register_plugin(ComicStoryboardPlugin(enabled=True))
+    _engine = NovelDirectorEngine(adapter=adapter)
+    # Register Galaxy Plugins
+    _engine.register_plugin(ContinuityAuditPlugin(strict_mode=True))
+    _engine.register_plugin(ComicStoryboardPlugin(enabled=True))
     return _engine
 
 
@@ -73,14 +78,15 @@ async def register_character(char: CharacterDossier):
 
 class DraftSceneRequest(BaseModel):
     contract: SceneContract
+    provider_model: str = "mock"
     generate_comic: bool = True
 
 
 @app.post("/api/scene/draft", response_model=SceneDraft)
 async def draft_scene(req: DraftSceneRequest):
-    engine = get_or_create_engine()
+    engine = get_or_create_engine(model_name=req.provider_model)
     if not engine.state:
-        # Auto-initialize default story state
+        # Auto-initialize story state
         await engine.initialize_story(
             title="Thương Lam Tiên Tôn",
             logline="Thiếu niên quật khởi",
