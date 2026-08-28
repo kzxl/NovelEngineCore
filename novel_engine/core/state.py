@@ -17,18 +17,18 @@ class PowerTier(BaseModel):
 
 
 class Faction(BaseModel):
-    faction_id: str
+    faction_id: str = Field(default="fac_main")
     name: str
-    alignment: str
-    core_doctrine: str
+    alignment: str = "Trung Lập"
+    core_doctrine: str = "Bảo vệ môn phái"
     relations: Dict[str, str] = Field(default_factory=dict)
 
 
 class Location(BaseModel):
-    location_id: str
+    location_id: str = Field(default="loc_main")
     name: str
-    climate_and_vibe: str
-    key_hazards: str
+    climate_and_vibe: str = "Linh khí dồi dào"
+    key_hazards: str = "Trận pháp cấm chế"
     connected_locations: List[str] = Field(default_factory=list)
 
 
@@ -46,6 +46,12 @@ class WorldBible(BaseModel):
     )
     factions: List[Faction] = Field(default_factory=list)
     locations: List[Location] = Field(default_factory=list)
+
+
+class WorldExpansionResult(BaseModel):
+    new_factions: List[Faction] = Field(default_factory=list)
+    new_locations: List[Location] = Field(default_factory=list)
+    new_canon_rules: List[str] = Field(default_factory=list)
 
 
 # ----------------------------------------------------------------------
@@ -108,6 +114,10 @@ class CharacterDossier(BaseModel):
     status: CharacterStatus
     inventory: List[InventoryItem] = Field(default_factory=list)
     relationships: Dict[str, Relationship] = Field(default_factory=dict)
+
+
+class GeneratedCharacterList(BaseModel):
+    characters: List[CharacterDossier] = Field(default_factory=list)
 
 
 # ----------------------------------------------------------------------

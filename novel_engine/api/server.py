@@ -10,10 +10,18 @@ from pydantic import BaseModel, Field
 
 from novel_engine.core.state import (
     WorldBible,
+    PowerTier,
+    Faction,
+    Location,
     CharacterDossier,
+    CharacterRole,
+    PersonalityTraits,
+    CharacterStatus,
     SceneContract,
     SceneDraft,
-    StoryState
+    StoryState,
+    WorldExpansionResult,
+    GeneratedCharacterList
 )
 from novel_engine.core.game_engine import (
     DiscoveryCodex,
@@ -23,11 +31,12 @@ from novel_engine.core.game_engine import (
 )
 from novel_engine.core.plot_events import PlotEvent, GeneratedEventList, EventSeverity
 from novel_engine.core.continuity import StorySpine, PlotThread, SceneSummary
-from novel_engine.engine import NovelDirectorEngine, WorldExpansionResult
+from novel_engine.engine import NovelDirectorEngine
 from novel_engine.plugins.comic_storyboard_plugin import ComicStoryboardPlugin
 from novel_engine.plugins.continuity_audit_plugin import ContinuityAuditPlugin
 from novel_engine.plugins.file_persistence_plugin import FilePersistencePlugin
 from novel_engine.plugins.rpg_discovery_plugin import RPGDiscoveryPlugin
+from novel_engine.core.storage import StoryStorageManager
 from novel_engine.adapters.ollama_adapter import OllamaAdapter
 from novel_engine.adapters.litellm_adapter import LiteLLMAdapter
 
@@ -40,6 +49,60 @@ app = FastAPI(
 # Global engine instance
 _engine: Optional[NovelDirectorEngine] = None
 _rpg_plugin: Optional[RPGDiscoveryPlugin] = None
+_storage: StoryStorageManager = StoryStorageManager()
+
+
+def create_initial_story_state() -> StoryState:
+    world = WorldBible(
+        world_id="world_canglan",
+        title="Thương Lam Giới",
+        genre="Xianxia",
+        era_setting="Mạt Pháp Cổ Đại",
+        energy_source="Thiên Địa Linh Khí",
+        origin_myth="Khai thiên lập địa từ hỗn mang",
+        canon_rules=[
+            "Không thể trùng sinh sau khi hồn phi phách tán",
+            "Mọi pháp thuật đều tiêu hao linh lực hoặc thọ nguyên",
+            "Vượt cấp chiến đấu đòi hỏi pháp bảo hoặc đan dược nghịch thiên"
+        ],
+        power_progression=[
+            PowerTier(rank=1, name="Luyện Khí Kỳ", description="Hấp thu linh khí sơ khai", hard_limits="Chưa thể ngự kiếm phi hành"),
+            PowerTier(rank=2, name="Trúc Cơ Kỳ", description="Ngưng tụ linh dịch", hard_limits="Thọ nguyên 200 năm"),
+            PowerTier(rank=3, name="Kim Đan Kỳ", description="Kết thành Kim đan bất hoại", hard_limits="Thọ nguyên 500 năm")
+        ],
+        factions=[
+            Faction(faction_id="fac_1", name="Thương Lam Tông", alignment="Chính Đạo", core_doctrine="Lấy kiếm nhập đạo, diệt trừ ma tu")
+        ],
+        locations=[
+            Location(location_id="loc_1", name="Thương Lam Sơn Mạch - Hội Nghị Điện", climate_and_vibe="Hùng vĩ, linh khí dồi dào", key_hazards="Trận pháp hộ sơn")
+        ]
+    )
+    return StoryState(
+        story_id="story_canglan",
+        title="Thương Lam Tiên Tôn",
+        logline="Một thiếu niên phế vật tìm được chiếc nhẫn cổ quật khởi đối đầu tông môn.",
+        genre="Xianxia",
+        world_bible=world,
+        characters={
+            "char_lin_feng": CharacterDossier(
+                character_id="char_lin_feng",
+                name="Lâm Phong",
+                role=CharacterRole.PROTAGONIST,
+                visual_tags=["thiếu niên tu sĩ", "thanh y", "ánh mắt kiên định"],
+                personality=PersonalityTraits(core_motivation="Đột phá cảnh giới báo thù", fatal_flaw="Cố chấp", moral_boundary="Bảo vệ gia đình"),
+                status=CharacterStatus(power_tier="Luyện Khí Tầng 3")
+            ),
+            "char_elder_zhao": CharacterDossier(
+                character_id="char_elder_zhao",
+                name="Triệu Vô Cực",
+                role=CharacterRole.ANTAGONIST,
+                visual_tags=["lão giả nham hiểm", "hắc bào", "khí tức sắc bén"],
+                personality=PersonalityTraits(core_motivation="Đoạt bảo vật gia tộc", fatal_flaw="Tham lam tàn nhẫn", moral_boundary="Không từ thủ đoạn"),
+                status=CharacterStatus(power_tier="Luyện Khí Tầng 9")
+            )
+        },
+        chapters=[]
+    )
 
 
 def get_or_create_engine(model_name: str = "ollama/qwen2.5-coder:3b", api_key: Optional[str] = None, base_url: Optional[str] = None) -> NovelDirectorEngine:
@@ -59,6 +122,23 @@ def get_or_create_engine(model_name: str = "ollama/qwen2.5-coder:3b", api_key: O
         _engine.register_plugin(ComicStoryboardPlugin(enabled=True))
         _engine.register_plugin(FilePersistencePlugin(base_output_dir="output/stories"))
         _engine.register_plugin(_rpg_plugin)
+
+        # Set fast initial state
+        _engine.state = create_initial_story_state()
+        _engine.spine = StorySpine(
+            story_id=_engine.state.story_id,
+            main_questline=_engine.state.logline,
+            current_act="Hồi 1: Thiếu Niên Xuất Thôn & Sóng Gió Gia Tộc",
+            active_threads=[
+                PlotThread(
+                    thread_id="th_main_rivalry",
+                    title="Mối Thù Với Đại Trưởng Lão & Ngọc Bội Thất Lạc",
+                    core_conflict="Đại Trưởng Lão Triệu ép giá chuộc ngọc bội và muốn tước đoạt tài sản gia tộc.",
+                    involved_characters=["char_lin_feng", "char_elder_zhao"],
+                    introduced_in_scene="VOL01_CH01_SC01"
+                )
+            ]
+        )
     return _engine
 
 
@@ -207,12 +287,6 @@ class InitStoryRequest(BaseModel):
 @app.get("/api/state", response_model=StoryState)
 async def get_state():
     engine = get_or_create_engine()
-    if not engine.state:
-        await engine.initialize_story(
-            title="Thương Lam Tiên Tôn",
-            logline="Một thiếu niên phế vật tìm được chiếc nhẫn cổ quật khởi đối đầu tông môn.",
-            genre="Xianxia"
-        )
     return engine.state
 
 
@@ -222,6 +296,7 @@ async def init_story(req: InitStoryRequest):
     _engine = None
     engine = get_or_create_engine(req.provider_model, req.api_key, req.base_url)
     state = await engine.initialize_story(title=req.title, logline=req.logline, genre=req.genre)
+    _storage.save_story_state(state)
     return state
 
 
@@ -233,16 +308,12 @@ async def init_story(req: InitStoryRequest):
 async def get_story_spine():
     """Returns the continuous narrative spine and timeline continuity recaps."""
     engine = get_or_create_engine()
-    if not engine.state or not engine.spine:
-        await engine.initialize_story("Thương Lam Giới", "Tìm dược liệu cứu muội muội, quật khởi báo thù tông môn", "Xianxia")
     return engine.spine
 
 
 @app.get("/api/discovery/codex")
 async def get_discovery_codex():
     engine = get_or_create_engine()
-    if not engine.state:
-        await engine.initialize_story("Thương Lam Giới", "Tu tiên", "Xianxia")
     if _rpg_plugin and _rpg_plugin.codex:
         return _rpg_plugin.codex
     return {"total_discoveries": 0, "entries": [], "rpg_character_stats": {}, "active_fate_options": []}
@@ -267,7 +338,21 @@ async def select_fate_directive(req: SelectFateRequest):
 # Dynamic Plot & World Events Endpoints (Tự Sinh Biến Cố Cốt Truyện)
 # ----------------------------------------------------------------------
 
-_active_events: List[PlotEvent] = []
+_active_events: List[PlotEvent] = [
+    PlotEvent(
+        event_id="evt_initial_1",
+        title="⚔️ Đại Trưởng Lão Triệu Ép Hôn & Phong Tỏa Tông Môn",
+        severity=EventSeverity.MAJOR,
+        category="Gia Tộc Tranh Đấu",
+        trigger_cause="Triệu thị muốn thôn tính Lâm gia và đoạt lấy bảo vật tổ truyền.",
+        involved_characters=["char_lin_feng", "char_elder_zhao"],
+        location="Lâm Gia - Hội Nghị Đường",
+        impact_summary="Lâm Phong bị dồn vào chân tường, bắt buộc phải quyết định liều mạng hoặc bỏ trốn.",
+        suggested_scene_goal="Lâm Phong ném linh thạch chuộc lại ngọc bội và giải vây.",
+        suggested_conflict="Đại Trưởng Lão Triệu dùng uy áp Luyện Khí Tầng 9 ép giá lên gấp đôi.",
+        suggested_cliffhanger="Trưởng lão phát hiện dao động cổ xưa từ chiếc nhẫn và hạ lệnh phong tỏa toàn viện."
+    )
+]
 
 
 class AutoEventRequest(BaseModel):
@@ -277,17 +362,7 @@ class AutoEventRequest(BaseModel):
 
 @app.get("/api/events", response_model=List[PlotEvent])
 async def get_plot_events():
-    """Returns currently available dynamic plot events, generated by LLM if empty."""
-    global _active_events
-    engine = get_or_create_engine()
-    if not engine.state:
-        await engine.initialize_story("Thương Lam Giới", "Tìm dược liệu cứu muội muội, quật khởi báo thù tông môn", "Xianxia")
-    
-    if not _active_events:
-        try:
-            _active_events = await engine.auto_generate_plot_events(count=3)
-        except Exception as e:
-            print(f"[Server] Dynamic plot events fallback notice: {e}")
+    """Returns currently available plot events instantly."""
     return _active_events
 
 
@@ -301,6 +376,7 @@ async def auto_generate_events(req: AutoEventRequest):
     
     events = await engine.auto_generate_plot_events(count=req.count, focus_theme=req.focus_theme)
     _active_events = events
+    _storage.save_plot_events(engine.state.story_id, _active_events)
     return _active_events
 
 
@@ -319,6 +395,7 @@ class AutoWorldRequest(BaseModel):
 async def auto_generate_world(req: AutoWorldRequest):
     engine = get_or_create_engine(req.provider_model)
     state = await engine.initialize_story(title=req.title, logline=req.logline, genre=req.genre)
+    _storage.save_story_state(state)
     return state.world_bible
 
 
@@ -332,6 +409,7 @@ async def auto_evolve_world(req: EvolveWorldRequest):
     if not engine.state:
         await engine.initialize_story("Thương Lam Giới", "Tu tiên", "Xianxia")
     result = await engine.auto_evolve_world(focus_topic=req.focus_topic)
+    _storage.save_story_state(engine.state)
     return result
 
 
@@ -346,6 +424,7 @@ async def auto_generate_characters(req: AutoCharRequest):
     if not engine.state:
         await engine.initialize_story("Thương Lam Giới", "Tu tiên", "Xianxia")
     chars = await engine.auto_generate_characters(count=req.count, roles_focus=req.roles_focus)
+    _storage.save_story_state(engine.state)
     return chars
 
 
@@ -355,6 +434,7 @@ async def add_character(char: CharacterDossier):
     if not engine.state:
         await engine.initialize_story("Thương Lam Giới", "Tu tiên", "Xianxia")
     engine.register_character(char)
+    _storage.save_story_state(engine.state)
     return char
 
 
@@ -363,6 +443,7 @@ async def delete_character(character_id: str):
     engine = get_or_create_engine()
     if engine.state and character_id in engine.state.characters:
         engine.delete_character(character_id)
+        _storage.save_story_state(engine.state)
         return {"status": "deleted", "character_id": character_id}
     raise HTTPException(status_code=404, detail="Character not found.")
 

@@ -23,22 +23,14 @@ from novel_engine.core.state import (
     CharacterStatus,
     InventoryItem,
     SceneContract,
-    SceneDraft
+    SceneDraft,
+    GeneratedCharacterList,
+    WorldExpansionResult
 )
 from novel_engine.core.plot_events import PlotEvent, GeneratedEventList
 from novel_engine.core.continuity import StorySpine, SceneSummary, PlotThread
 from novel_engine.core.context_builder import ContextBuilder
 from novel_engine.plugins.base import INovelPlugin
-
-
-class GeneratedCharacterList(BaseModel):
-    characters: List[CharacterDossier] = Field(default_factory=list)
-
-
-class WorldExpansionResult(BaseModel):
-    new_factions: List[Faction] = Field(default_factory=list)
-    new_locations: List[Location] = Field(default_factory=list)
-    new_canon_rules: List[str] = Field(default_factory=list)
 
 
 class NovelDirectorEngine:

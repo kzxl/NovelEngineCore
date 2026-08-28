@@ -59,6 +59,30 @@ class StoryStorageManager:
 
         return story_dir
 
+    def save_plot_events(self, story_id: str, events: list) -> str:
+        """Saves dynamic plot events to disk."""
+        story_dir = self.get_story_dir(story_id)
+        events_json_path = os.path.join(story_dir, "plot_events.json")
+        try:
+            with open(events_json_path, "w", encoding="utf-8") as f:
+                events_data = [e.model_dump() if hasattr(e, "model_dump") else e for e in events]
+                json.dump(events_data, f, ensure_ascii=False, indent=2)
+        except Exception:
+            pass
+        return events_json_path
+
+    def save_story_state(self, state: StoryState) -> str:
+        """Saves full story state manifest."""
+        self.save_world_and_characters(state)
+        story_dir = self.get_story_dir(state.story_id)
+        state_json_path = os.path.join(story_dir, "story_manifest.json")
+        try:
+            with open(state_json_path, "w", encoding="utf-8") as f:
+                f.write(state.model_dump_json(indent=2))
+        except Exception:
+            pass
+        return story_dir
+
     def save_scene_draft(self, state: StoryState, draft: SceneDraft) -> dict:
         """Saves individual scene draft, appends to novel manuscript, and saves comic script."""
         story_dir = self.get_story_dir(state.story_id)
