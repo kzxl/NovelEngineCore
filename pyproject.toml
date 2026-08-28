@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "novel-engine-core"
+version = "0.1.0"
+description = "A deterministic, model-agnostic orchestration shell and narrative director engine for novels and comic storyboards."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "pydantic>=2.7.0",
+    "litellm>=1.40.0",
+    "fastapi>=0.111.0",
+    "uvicorn>=0.30.0",
+    "pyyaml>=6.0.1",
+    "rich>=13.7.0",
+    "pytest>=8.2.0"
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["novel_engine*"]
