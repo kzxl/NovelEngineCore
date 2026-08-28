@@ -38,6 +38,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   await fetchModels();
   await fetchState();
   await fetchPlotEvents();
+  await fetchStorySpine();
   await refreshDiscoveryCodex();
 });
 
@@ -768,6 +769,28 @@ function stopActiveGeneration() {
   }
 }
 
+async function fetchStorySpine() {
+  try {
+    const res = await fetch('/api/story/spine');
+    if (res.ok) {
+      const spine = await res.json();
+      const questEl = document.getElementById('spine-quest-text');
+      const recapEl = document.getElementById('spine-continuity-recap');
+      
+      if (questEl && spine.main_questline) {
+        questEl.innerHTML = `🎯 <strong>Mục tiêu tối thượng:</strong> ${spine.main_questline}`;
+      }
+      
+      if (recapEl && spine.timeline_recaps && spine.timeline_recaps.length > 0) {
+        const lastRecap = spine.timeline_recaps[spine.timeline_recaps.length - 1];
+        recapEl.innerHTML = `⚡ <strong>Tiếp nối cảnh trước [${lastRecap.scene_id}]:</strong> ${lastRecap.key_actions} ➔ <em>${lastRecap.ending_cliffhanger}</em>`;
+      }
+    }
+  } catch (err) {
+    console.warn("Could not fetch story spine", err);
+  }
+}
+
 // ----------------------------------------------------------------------
 // 4. Novel Drafting Galaxy (Viết Truyện & Số Phận)
 // ----------------------------------------------------------------------
@@ -836,6 +859,7 @@ async function generateScene() {
     if (res.ok) {
       const data = await res.json();
       renderDraft(data);
+      await fetchStorySpine();
       await refreshDiscoveryCodex();
     } else {
       const err = await res.json();

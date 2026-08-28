@@ -22,6 +22,7 @@ from novel_engine.core.game_engine import (
     ChapterPlanningConfig
 )
 from novel_engine.core.plot_events import PlotEvent, GeneratedEventList, EventSeverity
+from novel_engine.core.continuity import StorySpine, PlotThread, SceneSummary
 from novel_engine.engine import NovelDirectorEngine, WorldExpansionResult
 from novel_engine.plugins.comic_storyboard_plugin import ComicStoryboardPlugin
 from novel_engine.plugins.continuity_audit_plugin import ContinuityAuditPlugin
@@ -227,6 +228,15 @@ async def init_story(req: InitStoryRequest):
 # ----------------------------------------------------------------------
 # RPG Discovery Codex & Game Directives Endpoints
 # ----------------------------------------------------------------------
+
+@app.get("/api/story/spine", response_model=StorySpine)
+async def get_story_spine():
+    """Returns the continuous narrative spine and timeline continuity recaps."""
+    engine = get_or_create_engine()
+    if not engine.state or not engine.spine:
+        await engine.initialize_story("Thương Lam Giới", "Tìm dược liệu cứu muội muội, quật khởi báo thù tông môn", "Xianxia")
+    return engine.spine
+
 
 @app.get("/api/discovery/codex")
 async def get_discovery_codex():

@@ -1,17 +1,22 @@
 """Context Builder & Lore Trigger Engine.
 
 Synthesizes laser-focused micro-context (2.5k - 4k tokens) for LLMs,
-preventing context pollution and hallucination.
+preventing context pollution, hallucination, and plot drift.
 """
 
-from typing import List, Dict
+from typing import List, Dict, Optional
 from novel_engine.core.state import StoryState, SceneContract, CharacterDossier
+from novel_engine.core.continuity import StorySpine
 
 
 class ContextBuilder:
     @staticmethod
-    def build_scene_prompt(state: StoryState, contract: SceneContract) -> str:
-        """Compiles a complete instruction payload for the drafting LLM."""
+    def build_scene_prompt(
+        state: StoryState,
+        contract: SceneContract,
+        spine: Optional[StorySpine] = None
+    ) -> str:
+        """Compiles a complete instruction payload ensuring 100% causal continuity across chapters."""
         world = state.world_bible
         
         # 1. Extract Canon Rules
@@ -39,57 +44,70 @@ class ContextBuilder:
             char = state.characters.get(char_id)
             if char:
                 dossiers = (
-                    f"### Character: {char.name} (Role: {char.role.value})\n"
-                    f"- Motivation: {char.personality.core_motivation}\n"
-                    f"- Fatal Flaw: {char.personality.fatal_flaw}\n"
-                    f"- Speech Style: {char.speech.vocabulary_level}\n"
-                    f"- Current Status: Tier {char.status.power_tier}, Health: {char.status.health_condition}, Mental: {char.status.mental_state}\n"
-                    f"- Equipped Items: {', '.join(item.name for item in char.inventory) or 'None'}"
+                    f"### Nhân Vật: {char.name} (Vai Trò: {char.role.value})\n"
+                    f"- Động Cơ Sâu Kín: {char.personality.core_motivation}\n"
+                    f"- Điểm Yếu Chết Người: {char.personality.fatal_flaw}\n"
+                    f"- Ranh Giới Đạo Đức: {char.personality.moral_boundary}\n"
+                    f"- Bí Mật Ẩn: {char.personality.hidden_secret or 'Chưa rõ'}\n"
+                    f"- Khí Chất & Giọng Điệu: {char.speech.vocabulary_level}\n"
+                    f"- Trạng Thái Hiện Tại: Tu Vi={char.status.power_tier}, Sức Khỏe={char.status.health_condition}, Tinh Thần={char.status.mental_state}\n"
+                    f"- Trang Bị / Pháp Bảo Đang Giữ: {', '.join(item.name for item in char.inventory) or 'Chưa có'}"
                 )
                 char_dossiers.append(dossiers)
 
         characters_context = "\n\n".join(char_dossiers)
 
-        # 5. Compile Hard Constraints
-        hard_constraints_text = "\n".join(f"[MUST NOT]: {c}" for c in contract.hard_constraints)
+        # 5. Extract Story Spine & Causal Timeline
+        spine_quest = spine.main_questline if spine else state.logline
+        previous_recap = spine.get_immediate_previous_context() if spine else "Phân cảnh mở đầu câu chuyện."
+        active_threads = spine.get_active_threads_summary() if spine else "Mâu thuẫn giành giật bảo vật gia tộc."
 
-        # 6. Final Structured Prompt Template
+        # 6. Compile Hard Constraints
+        hard_constraints_text = "\n".join(f"[CẤM TUYỆT ĐỐI]: {c}" for c in contract.hard_constraints)
+
+        # 7. Final Structured Prompt Template
         prompt = f"""
 ======================================================================
-WORLD CANON & INVARIANT LAWS:
+MẠCH TRUYỆN CHÍNH & NHIỆM VỤ XUYÊN SUỐT (OVERARCHING QUESTLINE):
+- Trọng Tâm Cốt Truyện: {spine_quest}
+- Tuyến Mâu Thuẫn Đang Diễn Ra (Plot Threads):
+{active_threads}
+
+CHUỖI NHÂN QUẢ TIẾP NỐI TỪ CHƯƠNG TRƯỚC (IMMEDIATE PREVIOUS CONTINUITY):
+{previous_recap}
+======================================================================
+
+LUẬT BẤT BIẾN CỦA THẾ GIỚI (WORLD CANON LAWS):
 {canon_rules_text}
 
-POWER SCALING LIMITS:
+GIỚI HẠN CẢNH GIỚI TU LUYỆN:
 {power_tiers_text}
 
-SETTING & ENVIRONMENT:
+BỐI CẢNH & KHÔNG GIAN CẢNH:
 {location_context}
 
-CHARACTERS IN SCENE:
+DÀN NHÂN VẬT THAM GIA:
 {characters_context}
 ======================================================================
 
-SCENE EXECUTION DIRECTIVE:
+CHỈ THỊ THI CÔNG PHÂN CẢNH (SCENE EXECUTION DIRECTIVE):
 - Scene ID: {contract.scene_id}
 - POV Character: {contract.pov_character_id}
-- Narrative Goal: {contract.narrative_goal}
-- Central Conflict: {contract.conflict_dynamic}
-- Expected Resolution: {contract.scene_resolution}
-- Mandatory Ending Hook (Cliffhanger): {contract.cliffhanger_hook}
-- Word Count Range: Từ {contract.min_word_count} đến {contract.max_word_count} từ (Mục tiêu chuẩn: ~{contract.target_word_count} từ).
+- Mục Tiêu Cảnh: {contract.narrative_goal}
+- Xung Đột Chính: {contract.conflict_dynamic}
+- Kết Quả Giải Quyết: {contract.scene_resolution}
+- Nút Thắt Bắt Buộc (Ending Cliffhanger): {contract.cliffhanger_hook}
+- Độ Dài Yêu Cầu: Từ {contract.min_word_count} đến {contract.max_word_count} từ tiếng Việt (Mục tiêu: ~{contract.target_word_count} từ).
 
-STRICT LENGTH & PACING DIRECTIVE:
-- QUY ĐỊNH ĐỘ DÀI: Bạn BẮT BUỘC phải viết trong khoảng {contract.min_word_count} - {contract.max_word_count} từ tiếng Việt. Tuyệt đối không viết quá vắn tắt dưới {contract.min_word_count} từ và không vượt quá {contract.max_word_count} từ.
+CHỈ THỊ LIÊN TỤC & KHÔNG LỆCH ĐỀ (STRICT CONTINUITY & FOCUS):
+1. BẮT BUỘC tiếp nối liền mạch hệ quả từ chương trước ({previous_recap.splitlines()[0] if previous_recap else ''}).
+2. MỌI HÀNH ĐỘNG phải bám sát mục tiêu chính ({spine_quest}). Tuyệt đối KHÔNG đưa vào các tình tiết lan man không phục vụ xung đột hiện tại.
+3. TUÂN THỦ NGHIÊM NGẶT độ dài {contract.min_word_count} - {contract.max_word_count} từ.
 
-STRICT NEGATIVE CONSTRAINTS (VIOLATIONS WILL BE REJECTED):
+CÁC ĐIỀU CẤM TUYỆT ĐỐI:
 {hard_constraints_text}
 
-LANGUAGE DIRECTIVE:
-Write strictly in Vietnamese (Tiếng Việt) using rich, expressive novel prose, detailed descriptions, and natural dialogue.
-
-INSTRUCTIONS:
-Write vivid, immersive narrative prose following 'Show, Don't Tell'. 
-Dialogue must strictly reflect character status and vocabulary style. 
-Never break the negative constraints.
+NGÔN NGỮ & VĂN PHONG:
+Viết 100% bằng tiếng Việt văn học chuẩn mực, áp dụng nguyên tắc 'Show, Don't Tell', mô tả chi tiết biểu cảm, luồng khí tức và lời thoại sắc sảo mang tính đe dọa hoặc mưu mô.
 """
         return prompt.strip()

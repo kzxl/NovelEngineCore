@@ -26,6 +26,7 @@ from novel_engine.core.state import (
     SceneDraft
 )
 from novel_engine.core.plot_events import PlotEvent, GeneratedEventList
+from novel_engine.core.continuity import StorySpine, SceneSummary, PlotThread
 from novel_engine.core.context_builder import ContextBuilder
 from novel_engine.plugins.base import INovelPlugin
 
@@ -48,6 +49,7 @@ class NovelDirectorEngine:
         self.event_bus = event_bus or EventBus()
         self.plugins: List[INovelPlugin] = []
         self.state: Optional[StoryState] = None
+        self.spine: Optional[StorySpine] = None
 
     def register_plugin(self, plugin: INovelPlugin):
         """Self-registers a feature star plugin into the micro-kernel."""
@@ -75,8 +77,9 @@ class NovelDirectorEngine:
                 temperature=0.4
             )
 
+        story_id = f"story_{title.lower().replace(' ', '_')}"
         self.state = StoryState(
-            story_id=f"story_{title.lower().replace(' ', '_')}",
+            story_id=story_id,
             title=title,
             logline=logline,
             genre=genre,
@@ -85,10 +88,39 @@ class NovelDirectorEngine:
             chapters=[]
         )
 
+        self.spine = StorySpine(
+            story_id=story_id,
+            main_questline=logline or f"Hành trình quật khởi tại {title}.",
+            current_act="Hồi 1: Thiếu Niên Xuất Thôn & Sóng Gió Gia Tộc",
+            active_threads=[
+                PlotThread(
+                    thread_id="th_clan_debt",
+                    title="Mối Thù Với Đại Trưởng Lão & Ngọc Bội Thất Lạc",
+                    core_conflict="Đại Trưởng Lão Triệu ép giá chuộc ngọc bội và muốn tước đoạt tài sản gia tộc.",
+                    involved_characters=["char_lin_feng", "char_elder_zhao"],
+                    introduced_in_scene="VOL01_CH01_SC01"
+                ),
+                PlotThread(
+                    thread_id="th_ancient_ring",
+                    title="Bí Mật Linh Hồn Trong Hắc Thiết Nhẫn",
+                    core_conflict="Linh hồn Đan Tôn bắt đầu thức tỉnh và đặt ra các điều kiện trao đổi sức mạnh.",
+                    involved_characters=["char_lin_feng"],
+                    introduced_in_scene="VOL01_CH01_SC01"
+                )
+            ]
+        )
+
         for plugin in self.plugins:
             await plugin.on_story_initialized(self.state)
 
-        await self.event_bus.publish(StoryInitializedEvent(story_state=self.state))
+        await self.event_bus.publish(
+            StoryInitializedEvent(
+                story_id=self.state.story_id,
+                title=title,
+                world_bible=world_bible
+            )
+        )
+
         return self.state
 
     async def auto_generate_characters(self, count: int = 3, roles_focus: str = "Protagonist, Antagonist, Mentor") -> List[CharacterDossier]:
@@ -208,8 +240,12 @@ Output JSON conforming strictly to GeneratedEventList schema.
         for plugin in self.plugins:
             active_contract = await plugin.pre_scene_draft(self.state, active_contract)
 
-        # 2. Build Micro-Context
-        prompt = ContextBuilder.build_scene_prompt(self.state, active_contract)
+        # 2. Build Micro-Context with Causal Story Spine
+        prompt = ContextBuilder.build_scene_prompt(
+            state=self.state,
+            contract=active_contract,
+            spine=self.spine
+        )
 
         # 3. Draft Prose
         if on_token:
@@ -227,12 +263,25 @@ Output JSON conforming strictly to GeneratedEventList schema.
             prose_content=prose
         )
 
-        # 4. Post-draft Plugin Middleware Pipeline
+        # 4. Record Scene into Story Spine Timeline
+        if self.spine:
+            self.spine.add_scene_summary(
+                SceneSummary(
+                    scene_id=active_contract.scene_id,
+                    chapter_id=active_contract.chapter_id,
+                    location=active_contract.location,
+                    key_actions=active_contract.narrative_goal,
+                    ending_cliffhanger=active_contract.cliffhanger_hook,
+                    immediate_consequences=active_contract.scene_resolution
+                )
+            )
+
+        # 5. Post-draft Plugin Middleware Pipeline
         final_draft = initial_draft
         for plugin in self.plugins:
             final_draft = await plugin.post_scene_draft(self.state, final_draft)
 
-        # 5. Broadcast Event
+        # 6. Broadcast Event
         await self.event_bus.publish(
             SceneDraftedEvent(
                 story_id=self.state.story_id,
