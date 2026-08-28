@@ -76,13 +76,16 @@ SCENE EXECUTION DIRECTIVE:
 - Central Conflict: {contract.conflict_dynamic}
 - Expected Resolution: {contract.scene_resolution}
 - Mandatory Ending Hook (Cliffhanger): {contract.cliffhanger_hook}
-- Target Word Count: ~{contract.target_word_count} words
+- Word Count Range: Từ {contract.min_word_count} đến {contract.max_word_count} từ (Mục tiêu chuẩn: ~{contract.target_word_count} từ).
+
+STRICT LENGTH & PACING DIRECTIVE:
+- QUY ĐỊNH ĐỘ DÀI: Bạn BẮT BUỘC phải viết trong khoảng {contract.min_word_count} - {contract.max_word_count} từ tiếng Việt. Tuyệt đối không viết quá vắn tắt dưới {contract.min_word_count} từ và không vượt quá {contract.max_word_count} từ.
 
 STRICT NEGATIVE CONSTRAINTS (VIOLATIONS WILL BE REJECTED):
 {hard_constraints_text}
 
 LANGUAGE DIRECTIVE:
-Write strictly in Vietnamese (Tiếng Việt) using rich, expressive novel prose and natural dialogue.
+Write strictly in Vietnamese (Tiếng Việt) using rich, expressive novel prose, detailed descriptions, and natural dialogue.
 
 INSTRUCTIONS:
 Write vivid, immersive narrative prose following 'Show, Don't Tell'. 

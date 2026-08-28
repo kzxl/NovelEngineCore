@@ -43,19 +43,25 @@
       <!-- Right Controls -->
       <div class="header-controls">
         <div class="model-badge">
-          <span class="pulse-dot"></span>
-          <select id="model-select" class="glow-select">
-            <option value="ollama/qwen2.5-coder:3b" selected>🟢 Local Ollama (qwen2.5-coder:3b)</option>
-            <option value="ollama/qwen2.5-coder:1.5b">🟢 Local Ollama (qwen2.5-coder:1.5b - Siêu Nhanh)</option>
-            <option value="ollama/qwen2.5:0.5b">🟢 Local Ollama (qwen2.5:0.5b - Siêu Nhẹ)</option>
-            <option value="ollama/qwen2.5:3b">🟢 Local Ollama (qwen2.5:3b - Văn Học)</option>
-            <option value="deepseek/deepseek-chat">DeepSeek-V3 (Cloud API)</option>
-            <option value="claude-3-5-sonnet">Claude 3.5 Sonnet (Cloud API)</option>
-            <option value="gpt-4o">OpenAI GPT-4o (Cloud API)</option>
+          <span id="model-status-dot" class="pulse-dot"></span>
+          <select id="model-select" class="glow-select" onchange="resetModelTestStatus()">
+            <!-- Loaded dynamically from BE -->
           </select>
         </div>
+        <button id="btn-test-model" class="btn btn-sm btn-test-glow" onclick="testSelectedModel()">
+          ⚡ Test Model
+        </button>
       </div>
     </header>
+
+    <!-- Top Diagnostic Banner (Hidden by default) -->
+    <div id="model-test-banner" class="model-test-banner hidden">
+      <div class="test-banner-content">
+        <span id="test-banner-icon">🟢</span>
+        <span id="test-banner-text">Đang kiểm tra kết nối...</span>
+      </div>
+      <button class="btn-close-sm" onclick="closeModelTestBanner()">✕</button>
+    </div>
 
     <!-- Main Container -->
     <main class="main-container">
@@ -233,6 +239,28 @@
                     <option value="char_lin_feng">Lâm Phong (Main)</option>
                     <option value="char_elder_zhao">Đại Trưởng Lão Triệu</option>
                   </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Chapter Length Limit Control (Giới hạn độ dài chương) -->
+            <div class="length-control-box">
+              <div class="form-row">
+                <div class="form-group half">
+                  <label>📏 Giới Hạn Độ Dài Chương (Word Count Limit):</label>
+                  <select id="length-preset-select" class="input-glow" onchange="onLengthPresetChange()">
+                    <option value="short">⚡ Ngắn / Webtoon Beat (400 - 700 từ)</option>
+                    <option value="standard" selected>📖 Tiêu Chuẩn Webnovel (800 - 1,400 từ)</option>
+                    <option value="long">📜 Chương Dài Chuyên Sâu (1,500 - 2,500 từ)</option>
+                    <option value="custom">⚙️ Tùy Chỉnh Giới Hạn Riêng...</option>
+                  </select>
+                </div>
+                <div class="form-group half" id="custom-word-range" style="display: none;">
+                  <label>Tối thiểu & Tối đa (Min - Max từ):</label>
+                  <div class="form-row">
+                    <input type="number" id="min-words-input" class="input-glow" value="800" min="200" max="5000" placeholder="Min">
+                    <input type="number" id="max-words-input" class="input-glow" value="1400" min="300" max="8000" placeholder="Max">
+                  </div>
                 </div>
               </div>
             </div>

@@ -137,6 +137,8 @@ class SceneContract(BaseModel):
     pov_character_id: str
     present_characters: List[str] = Field(default_factory=list)
     target_word_count: int = 1200
+    min_word_count: int = 800
+    max_word_count: int = 1500
     narrative_goal: str
     conflict_dynamic: str
     scene_resolution: str

@@ -83,6 +83,87 @@ function renderModelOptions(models) {
   }
 }
 
+// ----------------------------------------------------------------------
+// Test Model Diagnostic
+// ----------------------------------------------------------------------
+
+async function testSelectedModel() {
+  const select = document.getElementById('model-select');
+  const btn = document.getElementById('btn-test-model');
+  const banner = document.getElementById('model-test-banner');
+  const icon = document.getElementById('test-banner-icon');
+  const text = document.getElementById('test-banner-text');
+  const dot = document.getElementById('model-status-dot');
+
+  const selectedModel = select.value;
+  if (!selectedModel) {
+    alert("Vui lòng chọn 1 model trước khi test!");
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerText = "⏳ Đang Ping...";
+  banner.className = "model-test-banner";
+  icon.innerText = "⏳";
+  text.innerHTML = `Đang gửi tín hiệu kiểm tra tới <strong>[${selectedModel}]</strong>...`;
+
+  try {
+    const res = await fetch('/api/model/test', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model_name: selectedModel,
+        prompt: "Chào bạn, hãy phản hồi trong 1 câu ngắn gọn bằng tiếng Việt để xác nhận kết nối."
+      })
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success) {
+        banner.className = "model-test-banner success";
+        icon.innerText = "🟢";
+        text.innerHTML = `<strong>Thành Công!</strong> Model [${data.model_name}] phản hồi tốt (Độ trễ: <strong>${data.latency_ms}ms</strong>) ➜ <em>"${data.reply}"</em>`;
+        if (dot) {
+          dot.style.background = "#10b981";
+          dot.style.boxShadow = "0 0 8px #10b981";
+        }
+      } else {
+        banner.className = "model-test-banner error";
+        icon.innerText = "🔴";
+        text.innerHTML = `<strong>Lỗi Phản Hồi!</strong> Model [${data.model_name}] không phản hồi (Độ trễ: ${data.latency_ms}ms). Chi tiết: <span style="font-family:monospace;">${data.error || 'Unknown Error'}</span>`;
+        if (dot) {
+          dot.style.background = "#f43f5e";
+          dot.style.boxShadow = "0 0 8px #f43f5e";
+        }
+      }
+    } else {
+      banner.className = "model-test-banner error";
+      icon.innerText = "🔴";
+      text.innerText = `Lỗi máy chủ (HTTP ${res.status}): Không thể gọi endpoint kiểm tra model.`;
+    }
+  } catch (err) {
+    banner.className = "model-test-banner error";
+    icon.innerText = "🔴";
+    text.innerText = `Lỗi mạng: Không thể kết nối tới server (${err.message}).`;
+  } finally {
+    btn.disabled = false;
+    btn.innerText = "⚡ Test Model";
+  }
+}
+
+function closeModelTestBanner() {
+  document.getElementById('model-test-banner').classList.add('hidden');
+}
+
+function resetModelTestStatus() {
+  closeModelTestBanner();
+  const dot = document.getElementById('model-status-dot');
+  if (dot) {
+    dot.style.background = "#10b981";
+    dot.style.boxShadow = "0 0 8px #10b981";
+  }
+}
+
 async function fetchState() {
   try {
     const res = await fetch('/api/state');
@@ -505,6 +586,31 @@ function renderFateChoices(choices) {
   });
 }
 
+function onLengthPresetChange() {
+  const preset = document.getElementById('length-preset-select').value;
+  const customBox = document.getElementById('custom-word-range');
+  if (preset === 'custom') {
+    customBox.style.display = 'block';
+  } else {
+    customBox.style.display = 'none';
+  }
+}
+
+function getWordCountLimits() {
+  const preset = document.getElementById('length-preset-select').value;
+  if (preset === 'short') {
+    return { min_words: 400, max_words: 700, target_words: 550 };
+  } else if (preset === 'long') {
+    return { min_words: 1500, max_words: 2500, target_words: 2000 };
+  } else if (preset === 'custom') {
+    const minW = parseInt(document.getElementById('min-words-input').value, 10) || 500;
+    const maxW = parseInt(document.getElementById('max-words-input').value, 10) || 1500;
+    return { min_words: minW, max_words: maxW, target_words: Math.round((minW + maxW) / 2) };
+  }
+  // standard
+  return { min_words: 800, max_words: 1400, target_words: 1100 };
+}
+
 // ----------------------------------------------------------------------
 // 4. Novel Drafting Galaxy (Viết Truyện & Số Phận)
 // ----------------------------------------------------------------------
@@ -528,6 +634,7 @@ async function generateScene() {
   const castSize = parseInt(document.getElementById('cast-size-select').value, 10);
   const spotlightChar = document.getElementById('spotlight-char-select').value;
   const fateDirective = selectedFateChoice ? selectedFateChoice.title + ": " + selectedFateChoice.description : "";
+  const lengthLimits = getWordCountLimits();
 
   const payload = {
     contract: {
@@ -538,7 +645,9 @@ async function generateScene() {
       time_of_day: "Hoàng hôn",
       pov_character_id: spotlightChar,
       present_characters: castSize === 1 ? [spotlightChar] : [spotlightChar, "char_elder_zhao"],
-      target_word_count: 800,
+      target_word_count: lengthLimits.target_words,
+      min_word_count: lengthLimits.min_words,
+      max_word_count: lengthLimits.max_words,
       narrative_goal: `[Số lượng nhân vật: ${castSize}] ` + (fateDirective || "Lâm Phong ném linh thạch trả nợ để chuộc lại Vân Hà Ngọc Bội."),
       conflict_dynamic: "Đại Trưởng Lão Triệu ép giá tăng gấp đôi lên 1,000 linh thạch và công khai sỉ nhục.",
       scene_resolution: "Lâm Phong dằn mặt trưởng lão bằng cách ném đủ linh thạch.",

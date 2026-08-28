@@ -141,6 +141,54 @@ async def get_available_models():
     return models
 
 
+class TestModelRequest(BaseModel):
+    model_name: str = "ollama/qwen2.5-coder:3b"
+    prompt: Optional[str] = "Hãy trả lời trong 1 câu ngắn bằng tiếng Việt: Bạn tên là gì và đã sẵn sàng chưa?"
+
+
+class TestModelResponse(BaseModel):
+    success: bool
+    latency_ms: int
+    reply: str
+    model_name: str
+    error: Optional[str] = None
+
+
+@app.post("/api/model/test", response_model=TestModelResponse)
+async def test_model_connection(req: TestModelRequest):
+    """Tests connection and measures latency for the selected LLM."""
+    import time
+    start_time = time.time()
+    try:
+        if req.model_name.startswith("ollama/"):
+            actual_model = req.model_name.replace("ollama/", "")
+            adapter = OllamaAdapter(model_name=actual_model)
+        else:
+            adapter = LiteLLMAdapter(model_name=req.model_name)
+
+        reply = await adapter.generate_text(
+            prompt=req.prompt or "Hãy chào bằng tiếng Việt ngắn gọn.",
+            system_prompt="You are an AI assistant. Reply in one short Vietnamese sentence.",
+            max_tokens=100
+        )
+        latency = round((time.time() - start_time) * 1000)
+        return TestModelResponse(
+            success=True,
+            latency_ms=latency,
+            reply=reply.strip(),
+            model_name=req.model_name
+        )
+    except Exception as e:
+        latency = round((time.time() - start_time) * 1000)
+        return TestModelResponse(
+            success=False,
+            latency_ms=latency,
+            reply="",
+            model_name=req.model_name,
+            error=str(e)
+        )
+
+
 # ----------------------------------------------------------------------
 # Story & State Endpoints
 # ----------------------------------------------------------------------
