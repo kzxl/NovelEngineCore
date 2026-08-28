@@ -392,8 +392,26 @@ function renderCharactersView(characters) {
 }
 
 function updateCharacterBadge() {
-  const count = Object.keys(storyState?.characters || {}).length;
-  document.getElementById('char-count-badge').innerText = count;
+  const chars = storyState?.characters || {};
+  const count = Object.keys(chars).length;
+  const badge = document.getElementById('char-count-badge');
+  if (badge) badge.innerText = count;
+
+  // Dynamically populate spotlight character select
+  const select = document.getElementById('spotlight-char-select');
+  if (select) {
+    const prevVal = select.value;
+    select.innerHTML = '';
+    for (const [id, c] of Object.entries(chars)) {
+      const opt = document.createElement('option');
+      opt.value = id;
+      opt.innerText = `${c.name} (${c.role})`;
+      select.appendChild(opt);
+    }
+    if (prevVal && select.querySelector(`option[value="${prevVal}"]`)) {
+      select.value = prevVal;
+    }
+  }
 }
 
 async function autoGenerateCharacters() {
@@ -646,7 +664,8 @@ function renderRPGCodex(codex) {
 
   const stats = codex.rpg_character_stats || {};
   for (const [charId, stat] of Object.entries(stats)) {
-    const charName = charId === 'char_lin_feng' ? 'Lâm Phong' : charId === 'char_elder_zhao' ? 'Đại Trưởng Lão Triệu' : charId;
+    const charObj = storyState?.characters?.[charId];
+    const charName = charObj ? `${charObj.name} (${charObj.role})` : charId;
     const card = document.createElement('div');
     card.className = 'rpg-char-stat-card';
     card.innerHTML = `
@@ -818,29 +837,42 @@ async function generateScene() {
   currentAbortController = new AbortController();
 
   const castSize = parseInt(document.getElementById('cast-size-select').value, 10);
-  const spotlightChar = document.getElementById('spotlight-char-select').value;
+  const allCharIds = Object.keys(storyState?.characters || {});
+  const spotlightChar = document.getElementById('spotlight-char-select').value || allCharIds[0] || "char_main";
+  
+  // Select up to castSize characters dynamically
+  let presentChars = [spotlightChar];
+  for (const cid of allCharIds) {
+    if (cid !== spotlightChar && presentChars.length < castSize) {
+      presentChars.push(cid);
+    }
+  }
+
+  const locationName = storyState?.world_bible?.locations?.[0]?.name || "Đại Điện Trung Tâm";
   const fateDirective = selectedFateChoice ? selectedFateChoice.title + ": " + selectedFateChoice.description : "";
   const lengthLimits = getWordCountLimits();
+
+  const activeCharName = storyState?.characters?.[spotlightChar]?.name || "Nhân vật chính";
 
   const payload = {
     contract: {
       scene_id: "VOL01_CH01_SC01",
       chapter_id: "CH01",
       scene_index: 1,
-      location: "Lâm Gia - Hội Nghị Đường",
+      location: locationName,
       time_of_day: "Hoàng hôn",
       pov_character_id: spotlightChar,
-      present_characters: castSize === 1 ? [spotlightChar] : [spotlightChar, "char_elder_zhao"],
+      present_characters: presentChars,
       target_word_count: lengthLimits.target_words,
       min_word_count: lengthLimits.min_words,
       max_word_count: lengthLimits.max_words,
-      narrative_goal: `[Số lượng nhân vật: ${castSize}] ` + (fateDirective || "Lâm Phong ném linh thạch trả nợ để chuộc lại Vân Hà Ngọc Bội."),
-      conflict_dynamic: "Đại Trưởng Lão Triệu ép giá tăng gấp đôi lên 1,000 linh thạch và công khai sỉ nhục.",
-      scene_resolution: "Lâm Phong dằn mặt trưởng lão bằng cách ném đủ linh thạch.",
-      cliffhanger_hook: "Triệu trưởng lão nhận ra luồng linh khí cổ xưa trên ngọc bội và ra lệnh phong tỏa toàn bộ lối ra.",
+      narrative_goal: `[Số lượng nhân vật: ${presentChars.length}] ` + (fateDirective || `${activeCharName} đối mặt với xung đột đầu tiên tại ${locationName}.`),
+      conflict_dynamic: `Các thế lực đối lập tìm cách áp chế và cản trở ${activeCharName}.`,
+      scene_resolution: `${activeCharName} thể hiện bản lĩnh và vượt qua kiếp nạn tạm thời.`,
+      cliffhanger_hook: `Một luồng khí tức bất thường xuất hiện khiến cục diện rơi vào thế ngàn cân treo sợi tóc.`,
       hard_constraints: [
-        "Lâm Phong chưa đạt Trúc Cơ, TUYỆT ĐỐI KHÔNG được giết Trưởng Lão trong cảnh này.",
-        "Không được để lộ danh tính linh hồn trong chiếc nhẫn.",
+        "Bám sát tính cách và động cơ của từng nhân vật tham gia.",
+        "Không viết vượt quá cảnh giới tu vi hiện tại của nhân vật.",
         "Văn phong sắc sảo, dồn dập (Show, don't tell)."
       ]
     },

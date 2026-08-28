@@ -88,23 +88,28 @@ class NovelDirectorEngine:
             chapters=[]
         )
 
+        # 1. LLM dynamically generates initial cast (Protagonist, Antagonist, Mentor)
+        try:
+            initial_chars = await self.auto_generate_characters(count=3, roles_focus="Protagonist, Antagonist, Mentor")
+        except Exception as e:
+            print(f"[NovelEngine] Character auto-generation notice: {e}")
+            initial_chars = []
+
+        # 2. Build Dynamic Story Spine based on real characters generated
+        char_ids = list(self.state.characters.keys())
+        main_char = char_ids[0] if char_ids else "char_protagonist"
+        rival_char = char_ids[1] if len(char_ids) > 1 else main_char
+
         self.spine = StorySpine(
             story_id=story_id,
             main_questline=logline or f"Hành trình quật khởi tại {title}.",
-            current_act="Hồi 1: Thiếu Niên Xuất Thôn & Sóng Gió Gia Tộc",
+            current_act="Hồi 1: Thiếu Niên Xuất Thôn & Khởi Đầu Hành Trình",
             active_threads=[
                 PlotThread(
-                    thread_id="th_clan_debt",
-                    title="Mối Thù Với Đại Trưởng Lão & Ngọc Bội Thất Lạc",
-                    core_conflict="Đại Trưởng Lão Triệu ép giá chuộc ngọc bội và muốn tước đoạt tài sản gia tộc.",
-                    involved_characters=["char_lin_feng", "char_elder_zhao"],
-                    introduced_in_scene="VOL01_CH01_SC01"
-                ),
-                PlotThread(
-                    thread_id="th_ancient_ring",
-                    title="Bí Mật Linh Hồn Trong Hắc Thiết Nhẫn",
-                    core_conflict="Linh hồn Đan Tôn bắt đầu thức tỉnh và đặt ra các điều kiện trao đổi sức mạnh.",
-                    involved_characters=["char_lin_feng"],
+                    thread_id="th_main_rivalry",
+                    title=f"Xung Đột Đầu Tiên: {self.state.characters[main_char].name if main_char in self.state.characters else 'Nhân Vật Chính'} vs Thế Lực Cản Đường",
+                    core_conflict=f"Mâu thuẫn lợi ích và sự tranh đoạt tại {world_bible.locations[0].name if world_bible.locations else 'Tân Thủ Thôn'}.",
+                    involved_characters=[main_char, rival_char],
                     introduced_in_scene="VOL01_CH01_SC01"
                 )
             ]
