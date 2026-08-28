@@ -41,11 +41,15 @@ class ComicStoryboardPlugin(INovelPlugin):
             characters=state.characters
         )
 
-        comic_sb = await self._adapter.generate_structured(
-            prompt=prompt,
-            response_model=ComicStoryboard,
-            temperature=0.3
-        )
-
-        draft.comic_storyboard = comic_sb
+        try:
+            comic_sb = await self._adapter.generate_structured(
+                prompt=prompt,
+                response_model=ComicStoryboard,
+                temperature=0.3
+            )
+            draft.comic_storyboard = comic_sb
+        except Exception as err:
+            # Gracefully preserve draft if local model fails complex JSON
+            draft.comic_storyboard = None
+            print(f"[ComicStoryboardPlugin] Warning: Comic generation skipped ({err})")
         return draft

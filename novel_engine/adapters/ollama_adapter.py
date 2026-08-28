@@ -43,7 +43,7 @@ class OllamaAdapter(BaseLLMAdapter):
             }
         }
 
-        async with httpx.AsyncClient(timeout=120.0) as client:
+        async with httpx.AsyncClient(timeout=httpx.Timeout(300.0, connect=30.0)) as client:
             res = await client.post(self.api_chat_url, json=payload)
             res.raise_for_status()
             data = res.json()
@@ -116,7 +116,7 @@ class OllamaAdapter(BaseLLMAdapter):
             }
         }
 
-        async with httpx.AsyncClient(timeout=120.0) as client:
+        async with httpx.AsyncClient(timeout=httpx.Timeout(300.0, connect=30.0)) as client:
             res = await client.post(self.api_chat_url, json=payload)
             res.raise_for_status()
             data = res.json()
