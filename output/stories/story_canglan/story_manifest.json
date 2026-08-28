@@ -1,0 +1,246 @@
+{
+  "story_id": "story_canglan",
+  "title": "Thương Lam Tiên Tôn",
+  "logline": "Một thiếu niên phế vật tìm được chiếc nhẫn cổ quật khởi đối đầu tông môn.",
+  "genre": "Xianxia",
+  "world_bible": {
+    "world_id": "world_canglan",
+    "title": "Thương Lam Giới",
+    "genre": "Xianxia",
+    "era_setting": "Mạt Pháp Cổ Đại",
+    "origin_myth": "Khai thiên lập địa từ hỗn mang",
+    "energy_source": "Thiên Địa Linh Khí",
+    "power_progression": [
+      {
+        "rank": 1,
+        "name": "Luyện Khí Kỳ",
+        "description": "Hấp thu linh khí sơ khai",
+        "hard_limits": "Chưa thể ngự kiếm phi hành"
+      },
+      {
+        "rank": 2,
+        "name": "Trúc Cơ Kỳ",
+        "description": "Ngưng tụ linh dịch",
+        "hard_limits": "Thọ nguyên 200 năm"
+      },
+      {
+        "rank": 3,
+        "name": "Kim Đan Kỳ",
+        "description": "Kết thành Kim đan bất hoại",
+        "hard_limits": "Thọ nguyên 500 năm"
+      }
+    ],
+    "canon_rules": [
+      "Không thể trùng sinh sau khi hồn phi phách tán",
+      "Mọi pháp thuật đều tiêu hao linh lực hoặc thọ nguyên",
+      "Vượt cấp chiến đấu đòi hỏi pháp bảo hoặc đan dược nghịch thiên"
+    ],
+    "factions": [
+      {
+        "faction_id": "fac_1",
+        "name": "Thương Lam Tông",
+        "alignment": "Chính Đạo",
+        "core_doctrine": "Lấy kiếm nhập đạo, diệt trừ ma tu",
+        "relations": {}
+      }
+    ],
+    "locations": [
+      {
+        "location_id": "loc_1",
+        "name": "Thương Lam Sơn Mạch - Hội Nghị Điện",
+        "climate_and_vibe": "Hùng vĩ, linh khí dồi dào",
+        "key_hazards": "Trận pháp hộ sơn",
+        "connected_locations": []
+      }
+    ]
+  },
+  "characters": {
+    "char_lin_feng": {
+      "character_id": "char_lin_feng",
+      "name": "Lâm Phong",
+      "aliases": [],
+      "role": "Protagonist",
+      "visual_tags": [
+        "thiếu niên tu sĩ",
+        "thanh y",
+        "ánh mắt kiên định"
+      ],
+      "personality": {
+        "core_motivation": "Đột phá cảnh giới báo thù",
+        "fatal_flaw": "Cố chấp",
+        "moral_boundary": "Bảo vệ gia đình",
+        "hidden_secret": null
+      },
+      "speech": {
+        "vocabulary_level": "Standard",
+        "catchphrases": [],
+        "address_forms": {}
+      },
+      "status": {
+        "power_tier": "Luyện Khí Tầng 3",
+        "health_condition": "Healthy",
+        "mental_state": "Calm",
+        "current_location_id": null
+      },
+      "inventory": [],
+      "relationships": {}
+    },
+    "char_elder_zhao": {
+      "character_id": "char_elder_zhao",
+      "name": "Triệu Vô Cực",
+      "aliases": [],
+      "role": "Antagonist",
+      "visual_tags": [
+        "lão giả nham hiểm",
+        "hắc bào",
+        "khí tức sắc bén"
+      ],
+      "personality": {
+        "core_motivation": "Đoạt bảo vật gia tộc",
+        "fatal_flaw": "Tham lam tàn nhẫn",
+        "moral_boundary": "Không từ thủ đoạn",
+        "hidden_secret": null
+      },
+      "speech": {
+        "vocabulary_level": "Standard",
+        "catchphrases": [],
+        "address_forms": {}
+      },
+      "status": {
+        "power_tier": "Luyện Khí Tầng 9",
+        "health_condition": "Healthy",
+        "mental_state": "Calm",
+        "current_location_id": null
+      },
+      "inventory": [],
+      "relationships": {}
+    },
+    "char1": {
+      "character_id": "char1",
+      "name": "Luna Moonlight",
+      "aliases": [],
+      "role": "Protagonist",
+      "visual_tags": [
+        "25",
+        "black hair",
+        "white robe with silver embroidery",
+        "moonstone necklace"
+      ],
+      "personality": {
+        "core_motivation": "To protect the moon and its inhabitants from evil forces.",
+        "fatal_flaw": "Luna's inner darkness can sometimes drive her to make rash decisions.",
+        "moral_boundary": "She is determined to remain true to herself, even if it means sacrificing others.",
+        "hidden_secret": "Luna has a secret past that she keeps hidden but wishes to uncover."
+      },
+      "speech": {
+        "vocabulary_level": "Standard",
+        "catchphrases": [],
+        "address_forms": {}
+      },
+      "status": {
+        "power_tier": "Luyện Khí Tầng 3",
+        "health_condition": "Strong and resilient",
+        "mental_state": "Balanced",
+        "current_location_id": null
+      },
+      "inventory": [],
+      "relationships": {}
+    },
+    "char2": {
+      "character_id": "char2",
+      "name": "Shadow Blade",
+      "aliases": [],
+      "role": "Antagonist",
+      "visual_tags": [
+        "30",
+        "black hair",
+        "dark robe with deep purple tinge",
+        "enamored necklace"
+      ],
+      "personality": {
+        "core_motivation": "To claim power and control over the world.",
+        "fatal_flaw": "Shadow Blade's obsession with revenge fuels his hatred and anger.",
+        "moral_boundary": "He will do anything to achieve his goals, even if it means harming others.",
+        "hidden_secret": "Shadow Blade has a dark secret that he has kept hidden for years."
+      },
+      "speech": {
+        "vocabulary_level": "Standard",
+        "catchphrases": [],
+        "address_forms": {}
+      },
+      "status": {
+        "power_tier": "Luyện Khí Tầng 5",
+        "health_condition": "Injured and weakened by his wounds",
+        "mental_state": "Mad with rage",
+        "current_location_id": null
+      },
+      "inventory": [],
+      "relationships": {}
+    },
+    "char3": {
+      "character_id": "char3",
+      "name": "Athena Starlight",
+      "aliases": [],
+      "role": "Mentor",
+      "visual_tags": [
+        "40",
+        "long silver hair",
+        "white robe with golden threads",
+        "star pendant"
+      ],
+      "personality": {
+        "core_motivation": "To guide and help those in need.",
+        "fatal_flaw": "Athena's tendency to protect the weak at any cost can sometimes lead her into dangerous situations.",
+        "moral_boundary": "She is committed to maintaining her principles, even if it means facing danger.",
+        "hidden_secret": "Athena has a secret past that she wishes to uncover."
+      },
+      "speech": {
+        "vocabulary_level": "Standard",
+        "catchphrases": [],
+        "address_forms": {}
+      },
+      "status": {
+        "power_tier": "Luyện Khí Tầng 4",
+        "health_condition": "Healthy and strong",
+        "mental_state": "Stable",
+        "current_location_id": null
+      },
+      "inventory": [],
+      "relationships": {}
+    },
+    "char4": {
+      "character_id": "char4",
+      "name": "Zephyr Mist",
+      "aliases": [],
+      "role": "Sidekick",
+      "visual_tags": [
+        "20",
+        "curly brown hair",
+        "purple robe with silver threads",
+        "cloud pendant"
+      ],
+      "personality": {
+        "core_motivation": "To protect Luna and learn from her.",
+        "fatal_flaw": "Kiêu ngạo hoặc cố chấp",
+        "moral_boundary": "Không hại kẻ vô tội",
+        "hidden_secret": "Ẩn giấu thân thế bí ẩn"
+      },
+      "speech": {
+        "vocabulary_level": "Standard",
+        "catchphrases": [],
+        "address_forms": {}
+      },
+      "status": {
+        "power_tier": "Luyện Khí Tầng 1",
+        "health_condition": "Healthy and strong",
+        "mental_state": "Balanced",
+        "current_location_id": null
+      },
+      "inventory": [],
+      "relationships": {}
+    }
+  },
+  "chapters": [],
+  "active_chapter_index": 0,
+  "active_scene_index": 0
+}

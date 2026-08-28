@@ -1,0 +1,51 @@
+{
+  "world_id": "world_canglan",
+  "title": "Thương Lam Giới",
+  "genre": "Xianxia",
+  "era_setting": "Mạt Pháp Cổ Đại",
+  "origin_myth": "Khai thiên lập địa từ hỗn mang",
+  "energy_source": "Thiên Địa Linh Khí",
+  "power_progression": [
+    {
+      "rank": 1,
+      "name": "Luyện Khí Kỳ",
+      "description": "Hấp thu linh khí sơ khai",
+      "hard_limits": "Chưa thể ngự kiếm phi hành"
+    },
+    {
+      "rank": 2,
+      "name": "Trúc Cơ Kỳ",
+      "description": "Ngưng tụ linh dịch",
+      "hard_limits": "Thọ nguyên 200 năm"
+    },
+    {
+      "rank": 3,
+      "name": "Kim Đan Kỳ",
+      "description": "Kết thành Kim đan bất hoại",
+      "hard_limits": "Thọ nguyên 500 năm"
+    }
+  ],
+  "canon_rules": [
+    "Không thể trùng sinh sau khi hồn phi phách tán",
+    "Mọi pháp thuật đều tiêu hao linh lực hoặc thọ nguyên",
+    "Vượt cấp chiến đấu đòi hỏi pháp bảo hoặc đan dược nghịch thiên"
+  ],
+  "factions": [
+    {
+      "faction_id": "fac_1",
+      "name": "Thương Lam Tông",
+      "alignment": "Chính Đạo",
+      "core_doctrine": "Lấy kiếm nhập đạo, diệt trừ ma tu",
+      "relations": {}
+    }
+  ],
+  "locations": [
+    {
+      "location_id": "loc_1",
+      "name": "Thương Lam Sơn Mạch - Hội Nghị Điện",
+      "climate_and_vibe": "Hùng vĩ, linh khí dồi dào",
+      "key_hazards": "Trận pháp hộ sơn",
+      "connected_locations": []
+    }
+  ]
+}

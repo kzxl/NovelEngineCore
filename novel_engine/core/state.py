@@ -192,13 +192,25 @@ class ComicStoryboard(BaseModel):
 
 
 # ----------------------------------------------------------------------
-# 5. Master Story State
-# ----------------------------------------------------------------------
+class UnifiedSceneResponse(BaseModel):
+    scene_title: str = "Phân Cảnh Mới"
+    prose_content: str = Field(description="Toàn bộ nội dung văn xuôi chi tiết của chương truyện")
+    key_events: List[str] = Field(default_factory=list, description="Tóm tắt các sự kiện chính trong cảnh")
+    discovered_items: List[str] = Field(default_factory=list, description="Vật phẩm/pháp bảo xuất hiện")
+    discovered_locations: List[str] = Field(default_factory=list, description="Địa danh mới")
+    discovered_secrets: List[str] = Field(default_factory=list, description="Bí mật / manh mối hé lộ")
+    hp_change: int = Field(default=0, description="Biến động HP nhân vật chính")
+    reputation_change: int = Field(default=10, description="Biến động danh vọng")
+    luck_change: int = Field(default=5, description="Biến động khí vận")
+    ending_cliffhanger: str = Field(default="", description="Nút thắt kết thúc phân cảnh")
+    next_fate_choices: List[Dict[str, str]] = Field(default_factory=list, description="3 ngã rẽ số phận tiếp theo")
+
 
 class SceneDraft(BaseModel):
     scene_id: str
     contract: SceneContract
     prose_content: str
+    unified_data: Optional[UnifiedSceneResponse] = None
     comic_storyboard: Optional[ComicStoryboard] = None
     is_audited: bool = False
     audit_notes: Optional[str] = None

@@ -23,7 +23,8 @@ from novel_engine.core.state import (
     CharacterStatus,
     InventoryItem,
     GeneratedCharacterList,
-    WorldExpansionResult
+    WorldExpansionResult,
+    UnifiedSceneResponse
 )
 from novel_engine.core.plot_events import PlotEvent, GeneratedEventList, EventSeverity
 
@@ -159,6 +160,8 @@ class OllamaAdapter(BaseLLMAdapter):
             return self._sanitize_world_bible(parsed_json)  # type: ignore
         elif response_model == WorldExpansionResult:
             return self._sanitize_world_expansion(parsed_json)  # type: ignore
+        elif response_model == UnifiedSceneResponse:
+            return self._sanitize_unified_scene(parsed_json, raw_output)  # type: ignore
 
         # General Pydantic validation
         try:
@@ -167,7 +170,9 @@ class OllamaAdapter(BaseLLMAdapter):
             return response_model.model_validate({})
 
     def _get_compact_schema_instruction(self, model: Type[Any]) -> str:
-        if model == GeneratedCharacterList:
+        if model == UnifiedSceneResponse:
+            return '{\n  "scene_title": "Tên hồi/phân cảnh",\n  "prose_content": "Toàn bộ bài văn xuôi của chương truyện...",\n  "key_events": ["Sự kiện 1", "Sự kiện 2"],\n  "discovered_items": ["Vân Hà Ngọc Bội"],\n  "discovered_locations": ["Hội Nghị Đường"],\n  "discovered_secrets": ["Bí mật chiếc nhẫn"],\n  "hp_change": 0,\n  "reputation_change": 10,\n  "luck_change": 5,\n  "ending_cliffhanger": "Nút thắt kết cảnh",\n  "next_fate_choices": [\n    {"title": "Hướng 1: Liều mạng phá vây", "description": "Tấn công bất ngờ để mở đường máu"},\n    {"title": "Hướng 2: Nhẫn nhịn hoãn binh", "description": "Giao nộp linh thạch tìm cơ hội khác"},\n    {"title": "Hướng 3: Chạy vào cấm địa", "description": "Tìm kiếm cơ duyên thượng cổ"}\n  ]\n}'
+        elif model == GeneratedCharacterList:
             return '{\n  "characters": [\n    {\n      "character_id": "char_id",\n      "name": "Tên",\n      "role": "Protagonist/Antagonist/Mentor/Sidekick",\n      "visual_tags": ["tag1", "tag2"],\n      "personality": {\n        "core_motivation": "Động cơ",\n        "fatal_flaw": "Điểm yếu",\n        "moral_boundary": "Ranh giới đạo đức",\n        "hidden_secret": "Bí mật"\n      },\n      "status": {\n        "power_tier": "Luyện Khí Tầng 1",\n        "health_condition": "Khỏe mạnh",\n        "mental_state": "Bình tĩnh"\n      }\n    }\n  ]\n}'
         elif model == GeneratedEventList:
             return '{\n  "events": [\n    {\n      "event_id": "evt_1",\n      "title": "Tên biến cố",\n      "severity": "Tiểu Biến Cố / Đại Sự Kiện / Thiên Địa Dị Biến",\n      "category": "Tông Môn Tranh Đấu",\n      "trigger_cause": "Nguyên nhân",\n      "involved_characters": ["char_1"],\n      "location": "Địa danh",\n      "impact_summary": "Tác động",\n      "suggested_scene_goal": "Mục tiêu cảnh",\n      "suggested_conflict": "Xung đột chính",\n      "suggested_cliffhanger": "Nút thắt kết cảnh"\n    }\n  ]\n}'
@@ -429,4 +434,68 @@ class OllamaAdapter(BaseLLMAdapter):
             new_factions=new_factions or [Faction(faction_id="fac_mo_mon", name="Hắc Ma Môn", alignment="Ma Đạo", core_doctrine="Huyết tế cầu lực lượng")],
             new_locations=new_locations or [Location(location_id="loc_van_ma", name="Vạn Ma Cổ Mộ", climate_and_vibe="Âm u, tử khí nồng nặc", key_hazards="Ma chướng và tàn hồn")],
             new_canon_rules=new_rules or ["Kẻ bước vào cấm địa bị áp chế một nửa tu vi"]
+        )
+
+    def _sanitize_unified_scene(self, data: Any, raw_text: str) -> UnifiedSceneResponse:
+        """Sanitizes single-pass unified scene drafting output."""
+        if not isinstance(data, dict):
+            # Fallback if raw markdown was returned
+            prose = raw_text.strip()
+            return UnifiedSceneResponse(
+                scene_title="Phân Cảnh Mới",
+                prose_content=prose,
+                key_events=["Nhân vật đối mặt với tình huống căng thẳng."],
+                discovered_items=[],
+                discovered_locations=[],
+                discovered_secrets=[],
+                hp_change=0,
+                reputation_change=10,
+                luck_change=5,
+                ending_cliffhanger="Cục diện còn nhiều bí ẩn chưa được làm sáng tỏ.",
+                next_fate_choices=[
+                    {"title": "Lựa chọn 1: Tiếp tục điều tra bí ẩn", "description": "Lần theo các manh mối còn sót lại"},
+                    {"title": "Lựa chọn 2: Tạm lánh để đột phá tu vi", "description": "Tìm kiếm nơi yên tĩnh để củng cố thực lực"},
+                    {"title": "Lựa chọn 3: Tìm kiếm đồng minh mới", "description": "Kết giao với thế lực trung lập"}
+                ]
+            )
+
+        prose = str(data.get("prose_content") or data.get("content") or data.get("draft") or raw_text).strip()
+        title = str(data.get("scene_title") or "Phân Cảnh").strip()
+
+        key_events = data.get("key_events", [])
+        if isinstance(key_events, str):
+            key_events = [key_events]
+
+        items = data.get("discovered_items", [])
+        if isinstance(items, str):
+            items = [items]
+
+        locations = data.get("discovered_locations", [])
+        if isinstance(locations, str):
+            locations = [locations]
+
+        secrets = data.get("discovered_secrets", [])
+        if isinstance(secrets, str):
+            secrets = [secrets]
+
+        choices = data.get("next_fate_choices", [])
+        if not isinstance(choices, list) or not choices:
+            choices = [
+                {"title": "Lựa chọn 1: Liều mình phá vây", "description": "Tấn công bất ngờ để mở đường máu"},
+                {"title": "Lựa chọn 2: Nhẫn nhịn hoãn binh", "description": "Giao nộp linh thạch tìm cơ hội khác"},
+                {"title": "Lựa chọn 3: Chạy vào cấm địa", "description": "Tìm kiếm cơ duyên thượng cổ"}
+            ]
+
+        return UnifiedSceneResponse(
+            scene_title=title,
+            prose_content=prose,
+            key_events=key_events,
+            discovered_items=items,
+            discovered_locations=locations,
+            discovered_secrets=secrets,
+            hp_change=int(data.get("hp_change", 0)),
+            reputation_change=int(data.get("reputation_change", 10)),
+            luck_change=int(data.get("luck_change", 5)),
+            ending_cliffhanger=str(data.get("ending_cliffhanger") or "").strip(),
+            next_fate_choices=choices
         )

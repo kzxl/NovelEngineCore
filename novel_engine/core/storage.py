@@ -88,7 +88,14 @@ class StoryStorageManager:
         story_dir = self.get_story_dir(state.story_id)
         scene_id = draft.scene_id.lower()
 
-        # 1. Save Scene Markdown File
+        # 1. Save Scene Structured JSON & Markdown File
+        scene_json_path = os.path.join(story_dir, "chapters", f"{scene_id}.json")
+        try:
+            with open(scene_json_path, "w", encoding="utf-8") as f:
+                f.write(draft.model_dump_json(indent=2))
+        except Exception:
+            pass
+
         scene_file_path = os.path.join(story_dir, "chapters", f"{scene_id}.md")
         with open(scene_file_path, "w", encoding="utf-8") as f:
             f.write(f"# Phân Cảnh: {draft.scene_id}\n\n")

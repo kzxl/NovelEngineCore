@@ -1,0 +1,48 @@
+[
+  {
+    "event_id": "evt_1",
+    "title": "Tranh đoạt tài nguyên thiên nhiên",
+    "severity": "Tiểu Biến Cố (Minor Conflict)",
+    "category": "Tông Môn Tranh Đấu",
+    "trigger_cause": "Triệu Vô Cực đang muốn cướp lấy nguồn linh khí thiên nhiên của thế giới.",
+    "involved_characters": [
+      "Lâm Phong",
+      "Triệu Vô Cực"
+    ],
+    "location": "Đất liền Kinh",
+    "impact_summary": "Có thể ảnh hưởng đến sức mạnh chiến đấu và tài nguyên của Lâm Phong.",
+    "suggested_scene_goal": "Lâm Phong cần xác định cách chống lại Triệu Vô Cực trước khi họ tấn công.",
+    "suggested_conflict": "Triệu Vô Cực sử dụng linh khí thiên nhiên để tấn công Lâm Phong và Luna Moonlight.",
+    "suggested_cliffhanger": "Cảnh tranh cuối cùng giữa Lâm Phong, Triệu Vô Cực và Luna Moonlight sẽ quyết định sự tiến bộ của thế giới."
+  },
+  {
+    "event_id": "evt_2",
+    "title": "Bí cảnh xuất thế của Shadow Blade",
+    "severity": "Đại Sự Kiện (Major Crisis)",
+    "category": "Tông Môn Tranh Đấu",
+    "trigger_cause": "Shadow Blade tìm thấy bí mật về mình và muốn giải quyết nó.",
+    "involved_characters": [
+      "Shadow Blade"
+    ],
+    "location": "Đất liền Kinh",
+    "impact_summary": "Shadow Blade có thể trở thành kẻ thù của mọi người nếu không giải quyết được bí mật của mình.",
+    "suggested_scene_goal": "Shadow Blade cần xác định mục tiêu chính của mình trước khi bắt đầu hành động.",
+    "suggested_conflict": "Shadow Blade gặp phải một đối thủ mạnh mẽ trong hành trình giải quyết bí mật của mình.",
+    "suggested_cliffhanger": "Shadow Blade sẽ phải quyết định giữa việc tiếp tục hành động hoặc tìm cách tránh hiểm nguy nếu không giải quyết được bí mật của mình."
+  },
+  {
+    "event_id": "evt_3",
+    "title": "Triệu Vô Cực gây hậu quả tiêu cực cho thế giới",
+    "severity": "Tiểu Biến Cố (Minor Conflict)",
+    "category": "Tông Môn Tranh Đấu",
+    "trigger_cause": "Triệu Vô Cực gây ra nhiều bài bản của bản thân tại Kinh Thế giới và ảnh hưởng đến sức mạnh chiến đấu của toàn thế giới.",
+    "involved_characters": [
+      "Triệu Vô Cực"
+    ],
+    "location": "Kinh Thế giới",
+    "impact_summary": "Có thể gây ra hậu quả tiêu cực cho sức mạnh chiến đấu và tài nguyên của toàn thế giới.",
+    "suggested_scene_goal": "Triệu Vô Cực cần xác định cách giải quyết bài bản của bản thân trước khi tiếp tục hành động.",
+    "suggested_conflict": "Triệu Vô Cực gặp phải một đối thủ mạnh mẽ trong hành trình giải quyết bài bản của bản thân.",
+    "suggested_cliffhanger": "Cảnh tranh cuối cùng giữa Triệu Vô Cực và các đối thủ khác sẽ quyết định sự tiến bộ của thế giới."
+  }
+]

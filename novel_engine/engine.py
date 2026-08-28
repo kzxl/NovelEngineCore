@@ -244,20 +244,31 @@ Output JSON conforming strictly to GeneratedEventList schema.
             spine=self.spine
         )
 
-        # 3. Draft Prose
-        if on_token:
-            prose = await self.adapter.stream_text(
-                prompt=prompt,
-                on_chunk=on_token,
+        # 3. Draft Unified Scene in Single-Pass JSON
+        unified_prompt = (
+            prompt
+            + "\n\nQUY ĐỊNH KẾT QUẢ TRẢ VỀ:\n"
+            + "Hãy xuất ra định dạng JSON tuân thủ schema UnifiedSceneResponse với đầy đủ các trường: "
+            + "scene_title, prose_content, key_events, discovered_items, discovered_locations, discovered_secrets, "
+            + "hp_change, reputation_change, luck_change, ending_cliffhanger, next_fate_choices."
+        )
+
+        try:
+            unified_res = await self.adapter.generate_structured(
+                prompt=unified_prompt,
+                response_model=UnifiedSceneResponse,
                 temperature=0.7
             )
-        else:
+            prose = unified_res.prose_content
+        except Exception:
             prose = await self.adapter.generate_text(prompt=prompt, temperature=0.7)
+            unified_res = UnifiedSceneResponse(prose_content=prose)
 
         initial_draft = SceneDraft(
             scene_id=active_contract.scene_id,
             contract=active_contract,
-            prose_content=prose
+            prose_content=prose,
+            unified_data=unified_res
         )
 
         # 4. Record Scene into Story Spine Timeline

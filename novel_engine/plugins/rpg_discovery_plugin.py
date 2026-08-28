@@ -121,48 +121,107 @@ class RPGDiscoveryPlugin(INovelPlugin):
 
         pov_char_id = draft.contract.pov_character_id
 
-        # 1. Ask LLM to extract organic discoveries from the actual prose
-        extraction = await self._extract_rpg_data_from_prose(draft)
-
-        if extraction and extraction.discoveries:
-            for item in extraction.discoveries:
-                new_entry = DiscoveryEntry(
-                    id=f"disc_{int(time.time())}_{len(self.codex.entries)}",
-                    discovery_type=item.discovery_type,
-                    title=item.title,
-                    description=item.description,
-                    discovered_in_scene=draft.scene_id,
-                    discovered_by=pov_char_id
+        # 1. Check if unified_data was already generated in single-pass
+        if draft.unified_data:
+            # Direct instant extraction without extra LLM call
+            u = draft.unified_data
+            for item in u.discovered_items:
+                self.codex.entries.append(
+                    DiscoveryEntry(
+                        id=f"disc_{int(time.time())}_{len(self.codex.entries)}",
+                        discovery_type=DiscoveryType.ITEM_LOOT,
+                        title=item,
+                        description=f"Vật phẩm xuất hiện trong phân cảnh {draft.scene_id}",
+                        discovered_in_scene=draft.scene_id,
+                        discovered_by=pov_char_id
+                    )
                 )
-                self.codex.entries.append(new_entry)
-        else:
-            # Fallback heuristic: log the scene's key items/locations
-            self._fallback_heuristic_extraction(draft, pov_char_id)
+            for loc in u.discovered_locations:
+                self.codex.entries.append(
+                    DiscoveryEntry(
+                        id=f"disc_{int(time.time())}_{len(self.codex.entries)}",
+                        discovery_type=DiscoveryType.NEW_LOCATION,
+                        title=loc,
+                        description=f"Địa danh khám phá trong {draft.scene_id}",
+                        discovered_in_scene=draft.scene_id,
+                        discovered_by=pov_char_id
+                    )
+                )
+            for sec in u.discovered_secrets:
+                self.codex.entries.append(
+                    DiscoveryEntry(
+                        id=f"disc_{int(time.time())}_{len(self.codex.entries)}",
+                        discovery_type=DiscoveryType.SECRET_CLUE,
+                        title=sec,
+                        description=f"Bí mật hé lộ trong {draft.scene_id}",
+                        discovered_in_scene=draft.scene_id,
+                        discovered_by=pov_char_id
+                    )
+                )
 
-        # 2. Update Character RPG Stats from extracted consequences
-        if extraction and extraction.stat_updates:
-            for stat_up in extraction.stat_updates:
-                c_id = stat_up.character_id if stat_up.character_id in self.codex.rpg_character_stats else pov_char_id
-                if c_id in self.codex.rpg_character_stats:
-                    c_stat = self.codex.rpg_character_stats[c_id]
-                    c_stat.hp_percent = max(10, min(100, c_stat.hp_percent + stat_up.hp_loss_or_gain))
-                    c_stat.reputation += stat_up.reputation_gain
-                    c_stat.luck_score = min(100, c_stat.luck_score + stat_up.luck_gain)
-                    if stat_up.power_tier_update:
-                        c_stat.level = stat_up.power_tier_update
-        else:
-            # Default mild progression
+            # Update stats
             if pov_char_id in self.codex.rpg_character_stats:
-                st = self.codex.rpg_character_stats[pov_char_id]
-                st.reputation += 10
-                st.luck_score = min(100, st.luck_score + 5)
+                c_stat = self.codex.rpg_character_stats[pov_char_id]
+                c_stat.hp_percent = max(10, min(100, c_stat.hp_percent + u.hp_change))
+                c_stat.reputation += u.reputation_change
+                c_stat.luck_score = min(100, c_stat.luck_score + u.luck_change)
 
-        # 3. Update active Fate Choices for next chapter based on ending cliffhanger
-        if extraction and extraction.next_fate_choices and len(extraction.next_fate_choices) >= 2:
-            self.codex.active_fate_options = extraction.next_fate_choices
+            # Update Fate Choices
+            if u.next_fate_choices:
+                self.codex.active_fate_options = [
+                    FateChoice(
+                        choice_id=f"fate_{idx + 1}",
+                        title=c.get("title") if isinstance(c, dict) else str(c),
+                        description=c.get("description", "") if isinstance(c, dict) else "",
+                        risk_reward_summary="Ảnh hưởng đến số phận và hướng đi tiếp theo."
+                    )
+                    for idx, c in enumerate(u.next_fate_choices)
+                ]
+            else:
+                self._update_fallback_fate_choices(draft)
+
         else:
-            # Generate choices aligned with cliffhanger
-            self._update_fallback_fate_choices(draft)
+            # 1. Ask LLM to extract organic discoveries from the actual prose
+            extraction = await self._extract_rpg_data_from_prose(draft)
+
+            if extraction and extraction.discoveries:
+                for item in extraction.discoveries:
+                    new_entry = DiscoveryEntry(
+                        id=f"disc_{int(time.time())}_{len(self.codex.entries)}",
+                        discovery_type=item.discovery_type,
+                        title=item.title,
+                        description=item.description,
+                        discovered_in_scene=draft.scene_id,
+                        discovered_by=pov_char_id
+                    )
+                    self.codex.entries.append(new_entry)
+            else:
+                # Fallback heuristic: log the scene's key items/locations
+                self._fallback_heuristic_extraction(draft, pov_char_id)
+
+            # 2. Update Character RPG Stats from extracted consequences
+            if extraction and extraction.stat_updates:
+                for stat_up in extraction.stat_updates:
+                    c_id = stat_up.character_id if stat_up.character_id in self.codex.rpg_character_stats else pov_char_id
+                    if c_id in self.codex.rpg_character_stats:
+                        c_stat = self.codex.rpg_character_stats[c_id]
+                        c_stat.hp_percent = max(10, min(100, c_stat.hp_percent + stat_up.hp_loss_or_gain))
+                        c_stat.reputation += stat_up.reputation_gain
+                        c_stat.luck_score = min(100, c_stat.luck_score + stat_up.luck_gain)
+                        if stat_up.power_tier_update:
+                            c_stat.level = stat_up.power_tier_update
+            else:
+                # Default mild progression
+                if pov_char_id in self.codex.rpg_character_stats:
+                    st = self.codex.rpg_character_stats[pov_char_id]
+                    st.reputation += 10
+                    st.luck_score = min(100, st.luck_score + 5)
+
+            # 3. Update active Fate Choices for next chapter based on ending cliffhanger
+            if extraction and extraction.next_fate_choices and len(extraction.next_fate_choices) >= 2:
+                self.codex.active_fate_options = extraction.next_fate_choices
+            else:
+                self._update_fallback_fate_choices(draft)
 
         self.codex.total_discoveries = len(self.codex.entries)
 
