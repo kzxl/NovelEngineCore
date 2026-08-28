@@ -7,10 +7,11 @@ let currentDraft = null;
 let selectedFateChoice = null;
 let discoveryCodex = null;
 let availableModels = [];
+let activePlotEvents = [];
 
 // Switch Active Galaxy View
 function switchGalaxy(viewName) {
-  const views = ['world', 'characters', 'rpg', 'novel', 'comic'];
+  const views = ['world', 'characters', 'events', 'rpg', 'novel', 'comic'];
   views.forEach(v => {
     const navBtn = document.getElementById(`nav-${v}`);
     const viewPane = document.getElementById(`galaxy-view-${v}`);
@@ -27,6 +28,8 @@ function switchGalaxy(viewName) {
 
   if (viewName === 'rpg') {
     refreshDiscoveryCodex();
+  } else if (viewName === 'events') {
+    fetchPlotEvents();
   }
 }
 
@@ -34,6 +37,7 @@ function switchGalaxy(viewName) {
 document.addEventListener('DOMContentLoaded', async () => {
   await fetchModels();
   await fetchState();
+  await fetchPlotEvents();
   await refreshDiscoveryCodex();
 });
 
@@ -486,6 +490,132 @@ async function submitAddCharacter() {
   } catch (err) {
     alert('Lỗi thêm nhân vật: ' + err.message);
   }
+}
+
+// ----------------------------------------------------------------------
+// 3. Dynamic Plot & World Events Galaxy
+// ----------------------------------------------------------------------
+
+async function fetchPlotEvents() {
+  try {
+    const res = await fetch('/api/events');
+    if (res.ok) {
+      activePlotEvents = await res.json();
+      renderPlotEvents(activePlotEvents);
+    }
+  } catch (err) {
+    console.warn("Could not fetch plot events", err);
+  }
+}
+
+function renderPlotEvents(events) {
+  const container = document.getElementById('plot-events-grid');
+  const badge = document.getElementById('event-count-badge');
+  if (badge) badge.innerText = events.length;
+
+  container.innerHTML = '';
+  if (!events || events.length === 0) {
+    container.innerHTML = `
+      <div style="grid-column: 1/-1; text-align:center; padding: 40px; color:#64748b;">
+        Chưa có biến cố nào. Nhấn nút <strong>"⚡ AI Tự Sinh Biến Cố Mới"</strong> ở trên để tạo kịch tính!
+      </div>
+    `;
+    return;
+  }
+
+  events.forEach(evt => {
+    const card = document.createElement('div');
+    card.className = 'plot-event-card';
+
+    let severityClass = 'severity-minor';
+    if (evt.severity.includes('Major') || evt.severity.includes('Đại Sự Kiện')) severityClass = 'severity-major';
+    if (evt.severity.includes('Calamity') || evt.severity.includes('Đại Họa')) severityClass = 'severity-calamity';
+
+    card.innerHTML = `
+      <div class="event-card-header">
+        <div class="event-card-title">${evt.title}</div>
+        <span class="badge ${severityClass}">${evt.severity}</span>
+      </div>
+
+      <div class="event-meta-line">
+        <span>📍 <strong>Vị trí:</strong> ${evt.location}</span> • <span>👥 <strong>Nhân vật:</strong> ${evt.involved_characters.join(', ')}</span>
+      </div>
+
+      <div class="event-info-box">
+        <span class="label">Bắt Nguồn & Nguyên Nhân:</span>
+        <p>${evt.trigger_cause}</p>
+      </div>
+
+      <div class="event-info-box">
+        <span class="label">Tác Động Đến Cục Diện:</span>
+        <p>${evt.impact_summary}</p>
+      </div>
+
+      <div class="event-hook-box">
+        🎯 <strong>Gợi ý mục tiêu cảnh:</strong> ${evt.suggested_scene_goal}<br>
+        ⚠️ <strong>Xung đột:</strong> ${evt.suggested_conflict}<br>
+        🪝 <strong>Nút thắt kết cảnh:</strong> ${evt.suggested_cliffhanger}
+      </div>
+
+      <button class="btn-apply-event" onclick="applyEventToScene('${evt.event_id}')">
+        🚀 Áp Dụng Làm Phân Cảnh Tiếp Theo ➜
+      </button>
+    `;
+
+    container.appendChild(card);
+  });
+}
+
+async function autoGenerateEvents() {
+  const btn = document.getElementById('btn-auto-events');
+  const theme = document.getElementById('event-theme-input').value;
+  const count = parseInt(document.getElementById('event-count-select').value, 10) || 3;
+
+  btn.disabled = true;
+  btn.innerText = '⏳ AI Đang Xâu Chuỗi Biến Cố...';
+
+  try {
+    const res = await fetch('/api/events/auto-generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ count: count, focus_theme: theme })
+    });
+
+    if (res.ok) {
+      activePlotEvents = await res.json();
+      renderPlotEvents(activePlotEvents);
+      alert(`✓ Đã tự động sinh ${activePlotEvents.length} biến cố thế giới mới dựa trên cốt truyện và nhân vật!`);
+    } else {
+      const err = await res.json();
+      alert('Lỗi tạo biến cố từ AI: ' + JSON.stringify(err));
+    }
+  } catch (err) {
+    alert('Lỗi kết nối tới AI: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerText = '⚡ AI Tự Sinh Biến Cố Mới';
+  }
+}
+
+function applyEventToScene(eventId) {
+  const evt = activePlotEvents.find(e => e.event_id === eventId);
+  if (!evt) return;
+
+  // Switch to Novel Drafting Galaxy
+  switchGalaxy('novel');
+
+  // Update Contract Goals
+  const goalEl = document.getElementById('contract-goal');
+  const conflictEl = document.getElementById('contract-conflict');
+  const hookEl = document.getElementById('contract-hook');
+  const charactersEl = document.getElementById('contract-characters');
+
+  if (goalEl) goalEl.innerText = evt.suggested_scene_goal;
+  if (conflictEl) conflictEl.innerText = evt.suggested_conflict;
+  if (hookEl) hookEl.innerText = evt.suggested_cliffhanger;
+  if (charactersEl) charactersEl.innerText = evt.involved_characters.join(', ');
+
+  alert(`✓ Đã áp dụng biến cố "${evt.title}" vào Hợp Đồng Cảnh!\nBạn có thể nhấn "Kích Hoạt Bộ Shell Sinh Bản Thảo" để bắt đầu viết ngay.`);
 }
 
 // ----------------------------------------------------------------------

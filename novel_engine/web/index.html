@@ -24,19 +24,22 @@
       <!-- Center Galaxy Navigation Bar -->
       <nav class="galaxy-nav">
         <button id="nav-world" class="nav-pill active" onclick="switchGalaxy('world')">
-          🌍 1. Thế Giới Quan
+          🌍 1. Thế Giới
         </button>
         <button id="nav-characters" class="nav-pill" onclick="switchGalaxy('characters')">
           👥 2. Dàn Nhân Vật <span id="char-count-badge" class="count-bubble">0</span>
         </button>
+        <button id="nav-events" class="nav-pill" onclick="switchGalaxy('events')">
+          🔥 3. Biến Cố Cốt Truyện <span id="event-count-badge" class="count-bubble event-bubble">2</span>
+        </button>
         <button id="nav-rpg" class="nav-pill" onclick="switchGalaxy('rpg')">
-          🎮 3. Nhật Ký Khám Phá (RPG Codex) <span id="discovery-count-badge" class="count-bubble discovery-bubble">2</span>
+          🎮 4. RPG Codex <span id="discovery-count-badge" class="count-bubble discovery-bubble">2</span>
         </button>
         <button id="nav-novel" class="nav-pill" onclick="switchGalaxy('novel')">
-          📖 4. Viết Truyện & Số Phận
+          📖 5. Viết Truyện & Số Phận
         </button>
         <button id="nav-comic" class="nav-pill" onclick="switchGalaxy('comic')">
-          🎨 5. Phân Cảnh Comic
+          🎨 6. Phân Cảnh Comic
         </button>
       </nav>
 
@@ -169,7 +172,46 @@
       </section>
 
       <!-- ================================================================= -->
-      <!-- GALAXY 3: RPG DISCOVERY CODEX DASHBOARD (Nhật Ký Khám Phá Game)   -->
+      <!-- GALAXY 3: DYNAMIC PLOT EVENTS (Biến Cố & Sự Kiện Cốt Truyện)      -->
+      <!-- ================================================================= -->
+      <section id="galaxy-view-events" class="galaxy-view">
+        <div class="view-header">
+          <div>
+            <h2>🔥 Dynamic Plot & World Events (Biến Cố Cốt Truyện Tự Động)</h2>
+            <p class="subtitle">AI tự động phân tích bối cảnh, động cơ và bí mật của dàn nhân vật để sinh ra các biến cố bất ngờ.</p>
+          </div>
+          <div class="action-buttons">
+            <button id="btn-auto-events" class="btn btn-primary" onclick="autoGenerateEvents()">
+              ⚡ AI Tự Sinh Biến Cố Mới
+            </button>
+          </div>
+        </div>
+
+        <div class="events-filter-bar">
+          <div class="form-row">
+            <div class="form-group half">
+              <label>Chủ đề trọng tâm biến cố (Theme Focus):</label>
+              <input type="text" id="event-theme-input" class="input-glow" value="Tranh đoạt tài nguyên, bí cảnh xuất thế, ân oán tông môn">
+            </div>
+            <div class="form-group half">
+              <label>Số lượng sự kiện cần sinh:</label>
+              <select id="event-count-select" class="input-glow">
+                <option value="2">2 Biến Cố</option>
+                <option value="3" selected>3 Biến Cố Đa Tuyến</option>
+                <option value="4">4 Biến Cố Đại Loạn</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Grid of Plot Events Cards -->
+        <div id="plot-events-grid" class="events-grid">
+          <!-- Injected via JS -->
+        </div>
+      </section>
+
+      <!-- ================================================================= -->
+      <!-- GALAXY 4: RPG DISCOVERY CODEX DASHBOARD (Nhật Ký Khám Phá Game)   -->
       <!-- ================================================================= -->
       <section id="galaxy-view-rpg" class="galaxy-view">
         <div class="view-header">

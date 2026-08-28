@@ -21,6 +21,7 @@ from novel_engine.core.game_engine import (
     FateChoice,
     ChapterPlanningConfig
 )
+from novel_engine.core.plot_events import PlotEvent, GeneratedEventList, EventSeverity
 from novel_engine.engine import NovelDirectorEngine, WorldExpansionResult
 from novel_engine.plugins.comic_storyboard_plugin import ComicStoryboardPlugin
 from novel_engine.plugins.continuity_audit_plugin import ContinuityAuditPlugin
@@ -250,6 +251,64 @@ async def select_fate_directive(req: SelectFateRequest):
         "custom_directive": req.custom_directive,
         "message": "Đã thiết lập hướng đi số phận cho nhân vật trong phân cảnh tiếp theo!"
     }
+
+
+# ----------------------------------------------------------------------
+# Dynamic Plot & World Events Endpoints (Tự Sinh Biến Cố Cốt Truyện)
+# ----------------------------------------------------------------------
+
+_active_events: List[PlotEvent] = [
+    PlotEvent(
+        event_id="evt_clan_tribulation",
+        title="⚔️ Đại Trưởng Lão Triệu Ép Hôn & Phong Tỏa Tông Môn",
+        severity=EventSeverity.MAJOR,
+        category="Gia Tộc Tranh Đấu",
+        trigger_cause="Triệu thị muốn thôn tính Lâm gia và đoạt lấy Vân Hà Ngọc Bội.",
+        involved_characters=["char_lin_feng", "char_elder_zhao"],
+        location="Lâm Gia - Hội Nghị Đường",
+        impact_summary="Lâm Phong bị dồn vào chân tường, bắt buộc phải quyết định liều mạng hoặc bỏ trốn.",
+        suggested_scene_goal="Lâm Phong dùng linh thạch ném vào mặt trưởng lão để chuộc ngọc bội và giải vây.",
+        suggested_conflict="Đại Trưởng Lão Triệu dùng uy áp Luyện Khí Tầng 9 ép giá lên gấp đôi.",
+        suggested_cliffhanger="Trưởng lão phát hiện dao động cổ xưa từ chiếc nhẫn và hạ lệnh phong tỏa toàn viện."
+    ),
+    PlotEvent(
+        event_id="evt_tomb_opening",
+        title="🌌 Vạn Ma Cổ Mộ Xuất Thế Tại Hắc Ám Sâm Lâm",
+        severity=EventSeverity.CALAMITY,
+        category="Bí Cảnh Khai Mở",
+        trigger_cause="Trụ cột phong ấn ngàn năm nứt vỡ, phóng thích luồng khí tức thượng cổ.",
+        involved_characters=["char_lin_feng"],
+        location="Hắc Ám Sâm Lâm - Vạn Ma Cổ Mộ",
+        impact_summary="Toàn bộ tông môn trong bán kính ngàn dặm phái đệ tử tinh anh đến tranh đoạt.",
+        suggested_scene_goal="Lâm Phong tiến vào cấm địa để tìm linh thảo cứu muội muội và tị nạn.",
+        suggested_conflict="Chạm trán yêu thú bậc 2 và đệ tử Hắc Ma Môn đang truy sát người ngoài.",
+        suggested_cliffhanger="Nhặt được một nửa tấm tàn đồ chỉ đường tới bí mật của chiếc nhẫn."
+    )
+]
+
+
+class AutoEventRequest(BaseModel):
+    count: int = 3
+    focus_theme: Optional[str] = "Tranh đoạt tài nguyên, bí cảnh xuất thế, ân oán tông môn"
+
+
+@app.get("/api/events", response_model=List[PlotEvent])
+async def get_plot_events():
+    """Returns currently available dynamic plot events."""
+    return _active_events
+
+
+@app.post("/api/events/auto-generate", response_model=List[PlotEvent])
+async def auto_generate_events(req: AutoEventRequest):
+    """Generates new interconnected plot events based on current world and character states."""
+    global _active_events
+    engine = get_or_create_engine()
+    if not engine.state:
+        await engine.initialize_story("Thương Lam Giới", "Tu tiên", "Xianxia")
+    
+    events = await engine.auto_generate_plot_events(count=req.count, focus_theme=req.focus_theme)
+    _active_events = events
+    return _active_events
 
 
 # ----------------------------------------------------------------------

@@ -25,6 +25,7 @@ from novel_engine.core.state import (
     SceneContract,
     SceneDraft
 )
+from novel_engine.core.plot_events import PlotEvent, GeneratedEventList
 from novel_engine.core.context_builder import ContextBuilder
 from novel_engine.plugins.base import INovelPlugin
 
@@ -151,6 +152,36 @@ Output JSON conforming to WorldExpansionResult schema.
         self.state.world_bible.canon_rules.extend(result.new_canon_rules)
 
         return result
+
+    async def auto_generate_plot_events(self, count: int = 3, focus_theme: Optional[str] = None) -> List[PlotEvent]:
+        """Generates dynamic world events, crises, and plot twists based on world state and characters."""
+        if not self.state:
+            raise ValueError("StoryState not initialized.")
+
+        char_summary = "\n".join(
+            f"- {c.name} ({c.role.value}): Mục tiêu={c.personality.core_motivation}, Điểm yếu={c.personality.fatal_flaw}, Bí mật={c.personality.hidden_secret}"
+            for c in self.state.characters.values()
+        )
+
+        prompt = f"""
+You are an expert story director and drama engineer.
+WORLD: {self.state.world_bible.title} ({self.state.genre})
+ENERGY: {self.state.world_bible.energy_source}
+EXISTING CHARACTERS:
+{char_summary or "Chưa có nhân vật cụ thể"}
+
+THEME FOCUS: {focus_theme or "Tranh đoạt tài nguyên, bí cảnh xuất thế, ân oán tông môn"}
+
+Generate {count} dynamic, high-stakes plot events/crises (Biến cố thế giới) that will organically pull the characters into intense conflict.
+Each event must contain suggested scene hooks (narrative_goal, conflict, cliffhanger).
+Output JSON conforming strictly to GeneratedEventList schema.
+"""
+        result = await self.adapter.generate_structured(
+            prompt=prompt,
+            response_model=GeneratedEventList,
+            temperature=0.7
+        )
+        return result.events
 
     def register_character(self, character: CharacterDossier):
         """Registers a character and stores in character matrix."""
