@@ -1,0 +1,86 @@
+{
+  "world_id": "w_canglan",
+  "title": "Thương Lam Giới (Canglan Realm)",
+  "genre": "Xianxia",
+  "era_setting": "Kỷ nguyên Mạt Pháp Vạn Năm",
+  "origin_myth": null,
+  "energy_source": "Thiên Địa Linh Khí & Cổ Ma Khí",
+  "power_progression": [
+    {
+      "rank": 1,
+      "name": "Luyện Khí Kỳ",
+      "description": "Hấp thu linh khí tôi luyện kinh mạch gân cốt",
+      "hard_limits": "Không thể phi hành trên không"
+    },
+    {
+      "rank": 2,
+      "name": "Trúc Cơ Kỳ",
+      "description": "Linh khí hóa dịch thể, thọ mệnh 200 năm",
+      "hard_limits": "Chưa thể ngưng kết Kim Đan bất hoại"
+    },
+    {
+      "rank": 3,
+      "name": "Kim Đan Kỳ",
+      "description": "Kim đan bất toái, ngự kiếm phi hành ngàn dặm",
+      "hard_limits": "Chưa thể xuất hồn đoạt xá"
+    },
+    {
+      "rank": 4,
+      "name": "Nguyên Anh Kỳ",
+      "description": "Nguyên anh xuất khiếu, dời non lấp biển",
+      "hard_limits": "Không thể phá toái hư không"
+    }
+  ],
+  "canon_rules": [
+    "Phàm nhân không có linh căn vĩnh viễn không thể hấp thu linh khí.",
+    "Linh thạch một khi đã rút cạn năng lượng sẽ tự động hóa thành cát bụi vô dụng.",
+    "Chênh lệch mỗi một đại cảnh giới là khoảng cách hồng hào không thể bù đắp bằng số lượng.",
+    "Cổ Ma Khí sẽ ăn mòn thần trí của bất kỳ tu sĩ nào chưa đạt Nguyên Anh."
+  ],
+  "factions": [
+    {
+      "faction_id": "fac_lin",
+      "name": "Lâm Gia",
+      "alignment": "Trung lập suy tàn",
+      "core_doctrine": "Bảo tồn gia tộc huyết mạch",
+      "relations": {}
+    },
+    {
+      "faction_id": "fac_trieu",
+      "name": "Triệu Thị Gia Tộc",
+      "alignment": "Phản diện bành trướng",
+      "core_doctrine": "Thôn tính các gia tộc nhỏ yếu",
+      "relations": {}
+    },
+    {
+      "faction_id": "fac_van",
+      "name": "Vân Lam Kiếm Tông",
+      "alignment": "Chính đạo bá chủ",
+      "core_doctrine": "Chưởng quản kiếm đạo phương bắc",
+      "relations": {}
+    }
+  ],
+  "locations": [
+    {
+      "location_id": "loc_hall",
+      "name": "Lâm Gia - Hội Nghị Đường",
+      "climate_and_vibe": "Uy nghiêm, ngột ngạt, vương mùi trầm hương",
+      "key_hazards": "Trận pháp áp chế tu vi của Trưởng lão",
+      "connected_locations": []
+    },
+    {
+      "location_id": "loc_forest",
+      "name": "Hắc Ám Sâm Lâm",
+      "climate_and_vibe": "Mù mịt chướng khí, đêm tối vĩnh hằng",
+      "key_hazards": "Yêu thú bậc 3 và bẫy độc tự nhiên",
+      "connected_locations": []
+    },
+    {
+      "location_id": "loc_peak",
+      "name": "Thiên Kiếm Phong",
+      "climate_and_vibe": "Băng hàn thấu xương, mây mù bao phủ",
+      "key_hazards": "Kiếm khí tàn lưu từ thời thượng cổ",
+      "connected_locations": []
+    }
+  ]
+}

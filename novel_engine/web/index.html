@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NovelEngineCore - AI Story & Comic Director Studio</title>
+  <title>NovelEngineCore - Universe Architecture v4.0 Story & Comic Studio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
@@ -17,125 +17,177 @@
         <div class="logo-orb"></div>
         <div class="brand-text">
           <h1>NovelEngine<span>Core</span></h1>
-          <p class="subtitle">Universe Architecture v4.0 • AI Director & Comic Studio</p>
+          <p class="subtitle">Universe Architecture v4.0 • Autonomous AI Director & Comic Studio</p>
         </div>
       </div>
 
+      <!-- Center Galaxy Navigation Bar -->
+      <nav class="galaxy-nav">
+        <button id="nav-world" class="nav-pill active" onclick="switchGalaxy('world')">
+          🌍 1. Thế Giới Quan
+        </button>
+        <button id="nav-characters" class="nav-pill" onclick="switchGalaxy('characters')">
+          👥 2. Dàn Nhân Vật <span id="char-count-badge" class="count-bubble">0</span>
+        </button>
+        <button id="nav-novel" class="nav-pill" onclick="switchGalaxy('novel')">
+          📖 3. Viết Truyện Chữ
+        </button>
+        <button id="nav-comic" class="nav-pill" onclick="switchGalaxy('comic')">
+          🎨 4. Phân Cảnh Comic
+        </button>
+        <button id="nav-plugins" class="nav-pill" onclick="switchGalaxy('plugins')">
+          🧩 5. Bộ Mở Rộng
+        </button>
+      </nav>
+
+      <!-- Right Controls -->
       <div class="header-controls">
         <div class="model-badge">
           <span class="pulse-dot"></span>
           <select id="model-select" class="glow-select">
-            <option value="ollama/qwen2.5-coder:3b">🟢 Local Ollama (qwen2.5-coder:3b - Sẵn có)</option>
-            <option value="ollama/qwen2.5-coder:1.5b">🟢 Local Ollama (qwen2.5-coder:1.5b - Sẵn có)</option>
-            <option value="ollama/qwen2.5:0.5b">🟢 Local Ollama (qwen2.5:0.5b - Sẵn có)</option>
-            <option value="mock">⚡ Mock Engine (Giả lập nhanh / Zero Cost)</option>
+            <option value="mock">⚡ Mock Engine (Demo Tức Thì / 0đ)</option>
+            <option value="ollama/qwen2.5-coder:3b">🟢 Local Ollama (qwen2.5-coder:3b)</option>
+            <option value="ollama/qwen2.5-coder:1.5b">🟢 Local Ollama (qwen2.5-coder:1.5b - Siêu Nhanh)</option>
+            <option value="ollama/qwen2.5:3b">🟢 Local Ollama (qwen2.5:3b - Văn Học)</option>
             <option value="deepseek/deepseek-chat">DeepSeek-V3 (Cloud API)</option>
             <option value="claude-3-5-sonnet">Claude 3.5 Sonnet (Cloud API)</option>
             <option value="gpt-4o">OpenAI GPT-4o (Cloud API)</option>
             <option value="gemini/gemini-1.5-flash">Gemini 1.5 Flash (Cloud API)</option>
           </select>
         </div>
-        <button id="btn-quick-sample" class="btn btn-secondary">🎲 Nạp Truyện Mẫu (Tiên Hiệp)</button>
       </div>
     </header>
 
-    <!-- Main Grid -->
-    <main class="workspace-grid">
-      <!-- Left Column: Genesis & Character Matrix -->
-      <aside class="sidebar-panel">
-        <div class="panel-section">
-          <div class="section-header">
-            <span class="badge galaxy-badge">Genesis Galaxy</span>
-            <h2>1. Thế Giới Quan & Luật Lệ</h2>
+    <!-- Main Container -->
+    <main class="main-container">
+      
+      <!-- ================================================================= -->
+      <!-- GALAXY 1: WORLD GENESIS (Thế Giới Quan)                           -->
+      <!-- ================================================================= -->
+      <section id="galaxy-view-world" class="galaxy-view active">
+        <div class="view-header">
+          <div>
+            <h2>🌍 World Genesis Galaxy (Thế Giới Quan & Luật Lệ)</h2>
+            <p class="subtitle">Quản lý bối cảnh, hệ thống cấp bậc tu luyện, quy tắc bất biến, môn phái và cấm địa.</p>
           </div>
-          
-          <div class="form-group">
-            <label for="story-title">Tên Tác Phẩm</label>
-            <input type="text" id="story-title" class="input-glow" value="Thương Lam Tiên Tôn" placeholder="VD: Thương Lam Tiên Tôn">
-          </div>
-
-          <div class="form-row">
-            <div class="form-group half">
-              <label for="story-genre">Thể Loại</label>
-              <select id="story-genre" class="input-glow">
-                <option value="Xianxia">Tiên Hiệp / Tu Chân</option>
-                <option value="HighFantasy">High Fantasy / Ma Pháp</option>
-                <option value="Mystery">Trinh Thám / Huyền Bí</option>
-                <option value="Cyberpunk">Cyberpunk / Sci-Fi</option>
-                <option value="Apocalypse">Mạt Thế / Sinh Tồn</option>
-              </select>
-            </div>
-            <div class="form-group half">
-              <label for="energy-source">Hệ Thống Sức Mạnh</label>
-              <input type="text" id="energy-source" class="input-glow" value="Thiên Địa Linh Khí" placeholder="VD: Linh Khí, Mana">
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="story-logline">Cốt Truyện Tổng Quan (Logline)</label>
-            <textarea id="story-logline" class="input-glow" rows="2" placeholder="Tóm tắt ý tưởng khởi đầu...">Một thiếu niên phế vật tìm được chiếc nhẫn cổ thời thượng cổ, từng bước quật khởi đối đầu tông môn.</textarea>
-          </div>
-
-          <div class="form-group">
-            <label>Luật Bất Biến (Canon Rules)</label>
-            <div id="canon-rules-list" class="tag-cloud">
-              <span class="canon-tag">⚡ Phàm nhân không có linh căn không thể tu luyện</span>
-              <span class="canon-tag">⚡ Linh thạch cạn năng lượng sẽ hóa thành tro</span>
-              <span class="canon-tag">⚡ Chênh lệch mỗi đại cảnh giới là một trời một vực</span>
-            </div>
+          <div class="action-buttons">
+            <button id="btn-auto-world" class="btn btn-primary" onclick="autoGenerateWorld()">
+              ⚡ AI Tự Động Sinh Toàn Bộ Thế Giới
+            </button>
+            <button id="btn-evolve-world" class="btn btn-secondary" onclick="autoEvolveWorld()">
+              🌌 AI Tự Mở Rộng Lore & Cấm Địa
+            </button>
           </div>
         </div>
 
-        <!-- Character Dossier Section -->
-        <div class="panel-section">
-          <div class="section-header">
-            <span class="badge galaxy-badge">Character Galaxy</span>
-            <h2>2. Nhân Vật & Visual Tags</h2>
+        <div class="world-grid">
+          <!-- Left Column: Core Cosmology & Power System -->
+          <div class="panel-card">
+            <div class="panel-header">
+              <span class="badge galaxy-badge">Cosmology & Power</span>
+              <h3>Bản Sắc Thế Giới & Hệ Thống Năng Lượng</h3>
+            </div>
+            <div class="form-group">
+              <label>Tên Thế Giới / Tác Phẩm</label>
+              <input type="text" id="world-title" class="input-glow" value="Thương Lam Giới (Canglan Realm)">
+            </div>
+            <div class="form-row">
+              <div class="form-group half">
+                <label>Thể Loại</label>
+                <select id="world-genre" class="input-glow">
+                  <option value="Xianxia">Tiên Hiệp / Tu Chân</option>
+                  <option value="HighFantasy">High Fantasy / Ma Pháp</option>
+                  <option value="Mystery">Trinh Thám / Cổ Điển</option>
+                  <option value="Cyberpunk">Cyberpunk / Viễn Tưởng</option>
+                  <option value="Apocalypse">Mạt Thế / Dị Năng</option>
+                </select>
+              </div>
+              <div class="form-group half">
+                <label>Nguồn Năng Lượng / Hệ Thống Sức Mạnh</label>
+                <input type="text" id="world-energy" class="input-glow" value="Thiên Địa Linh Khí & Cổ Ma Khí">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Cốt Truyện Tổng Quan (Premise / Logline)</label>
+              <textarea id="world-logline" class="input-glow" rows="3">Một thiếu niên phế vật mang mối thù gia tộc tìm được chiếc nhẫn cổ thời thượng cổ, từng bước quật khởi đối đầu tông môn hủ bại.</textarea>
+            </div>
+
+            <!-- Power Tiers Progression -->
+            <div class="form-group">
+              <label>Hệ Thống Cảnh Giới Tu Luyện (Power Progression & Hard Limits)</label>
+              <div id="power-tiers-list" class="stacked-list">
+                <!-- Injected via JS -->
+              </div>
+            </div>
           </div>
 
-          <div id="characters-container" class="characters-list">
-            <div class="character-card">
-              <div class="char-header">
-                <span class="char-avatar">🥋</span>
-                <div>
-                  <h3 class="char-name">Lâm Phong</h3>
-                  <span class="char-role">Nhân Vật Chính (Protagonist)</span>
-                </div>
+          <!-- Right Column: Canon Rules, Factions & Locations -->
+          <div class="panel-card">
+            <div class="panel-header">
+              <span class="badge contract-badge">Canon Laws & Locations</span>
+              <h3>Luật Bất Biến, Môn Phái & Bản Đồ</h3>
+            </div>
+
+            <div class="form-group">
+              <label>Luật Bất Biến (Canon Rules - LLM Tuyệt Đối Không Được Phá)</label>
+              <div id="canon-rules-container" class="tag-cloud">
+                <!-- Injected via JS -->
               </div>
-              <div class="char-status">
-                <span>Tu vi: Luyện Khí Tầng 3</span> • <span class="injured">Bị thương vai phải</span>
+            </div>
+
+            <div class="form-group">
+              <label>Môn Phái & Thế Lực (Factions Matrix)</label>
+              <div id="factions-container" class="factions-list">
+                <!-- Injected via JS -->
               </div>
-              <div class="visual-tags-box">
-                <span class="tag">young male 18yo</span>
-                <span class="tag">long black ponytail</span>
-                <span class="tag">sharp cold eyes</span>
-                <span class="tag">ragged blue robe</span>
+            </div>
+
+            <div class="form-group">
+              <label>Địa Danh & Cấm Địa (Locations & Hazards)</label>
+              <div id="locations-container" class="locations-list">
+                <!-- Injected via JS -->
               </div>
             </div>
           </div>
         </div>
-      </aside>
+      </section>
 
-      <!-- Right Column: Workspace & Studio -->
-      <section class="main-studio">
-        <!-- Tab Bar -->
-        <div class="studio-tabs">
-          <button id="tab-btn-novel" class="tab-btn active" onclick="switchTab('novel')">
-            📖 1. Truyện Chữ (Novel Prose Studio)
-          </button>
-          <button id="tab-btn-comic" class="tab-btn" onclick="switchTab('comic')">
-            🎨 2. Phân Cảnh Truyện Tranh (Manga/Webtoon Studio)
-          </button>
+      <!-- ================================================================= -->
+      <!-- GALAXY 2: CHARACTER MATRIX (Dàn Nhân Vật)                          -->
+      <!-- ================================================================= -->
+      <section id="galaxy-view-characters" class="galaxy-view">
+        <div class="view-header">
+          <div>
+            <h2>👥 Character Matrix Galaxy (Quản Lý & Tự Sinh Nhân Vật)</h2>
+            <p class="subtitle">Định danh tính cách, động cơ, bí mật và Visual Tags để tạo hình ảnh truyện tranh nhất quán.</p>
+          </div>
+          <div class="action-buttons">
+            <button id="btn-auto-chars" class="btn btn-primary" onclick="autoGenerateCharacters()">
+              👥 AI Tự Sáng Tạo Dàn Nhân Vật
+            </button>
+            <button id="btn-add-char-manual" class="btn btn-secondary" onclick="openAddCharModal()">
+              ➕ Thêm Nhân Vật Thủ Công
+            </button>
+          </div>
         </div>
 
-        <!-- Tab 1: Novel Director & Drafter -->
-        <div id="tab-content-novel" class="tab-pane active">
-          <!-- Scene Contract Box -->
+        <!-- Characters Grid -->
+        <div id="characters-roster-grid" class="roster-grid">
+          <!-- Injected via JS -->
+        </div>
+      </section>
+
+      <!-- ================================================================= -->
+      <!-- GALAXY 3: NOVEL DRAFTING STUDIO (Viết Truyện Chữ)                 -->
+      <!-- ================================================================= -->
+      <section id="galaxy-view-novel" class="galaxy-view">
+        <div class="drafting-layout">
+          <!-- Left: Scene Contract Builder -->
           <div class="scene-contract-card">
             <div class="contract-header">
               <div class="contract-title-group">
                 <span class="badge contract-badge">Scene Contract Directive</span>
-                <h3>Phân Cảnh: Hồi 1 - Chương 1 (Cảnh 1)</h3>
+                <h3>Hợp Đồng Phân Cảnh: Hồi 1 - Chương 1 (Cảnh 1)</h3>
               </div>
               <div class="contract-meta">
                 <span>📍 Lâm Gia - Hội Nghị Đường</span> • <span>⏰ Hoàng Hôn</span>
@@ -143,6 +195,10 @@
             </div>
 
             <div class="contract-grid">
+              <div class="contract-item">
+                <span class="label">Nhân vật có mặt trong cảnh:</span>
+                <p id="contract-characters">Lâm Phong (Chính), Đại Trưởng Lão Triệu (Phản diện)</p>
+              </div>
               <div class="contract-item">
                 <span class="label">Mục tiêu cảnh (Goal):</span>
                 <p id="contract-goal">Lâm Phong đến trả 500 linh thạch để chuộc lại Vân Hà Ngọc Bội của mẫu thân.</p>
@@ -156,7 +212,7 @@
                 <p id="contract-hook">Triệu trưởng lão nhận ra luồng linh khí cổ xưa trên ngọc bội và ra lệnh phong tỏa toàn bộ lối ra.</p>
               </div>
               <div class="contract-item constraints-item">
-                <span class="label">Luật Cấm (Hard Negative Constraints):</span>
+                <span class="label">Luật Cấm Tuyệt Đối (Hard Negative Constraints):</span>
                 <ul id="contract-constraints">
                   <li>🚫 Lâm Phong chưa đạt Trúc Cơ, TUYỆT ĐỐI KHÔNG được giết Trưởng Lão trong cảnh này.</li>
                   <li>🚫 Không được để lộ danh tính linh hồn trong chiếc nhẫn.</li>
@@ -167,7 +223,7 @@
 
             <div class="contract-actions">
               <button id="btn-generate-scene" class="btn btn-primary" onclick="generateScene()">
-                <span class="btn-icon">⚡</span> Kích Hoạt Bộ Shell Sinh Chương
+                <span class="btn-icon">⚡</span> Kích Hoạt Bộ Shell Sinh Bản Thảo
               </button>
               <div id="status-indicator" class="status-indicator hidden">
                 <div class="spinner"></div>
@@ -176,12 +232,12 @@
             </div>
           </div>
 
-          <!-- Generated Prose Viewer -->
+          <!-- Right: Prose Viewer -->
           <div class="output-card">
             <div class="output-header">
               <div class="output-title">
                 <h3>Bản Thảo Tiểu Thuyết (Văn Xuôi Chi Tiết)</h3>
-                <span id="audit-badge" class="badge audit-pass-badge hidden">✓ 100% Canon Compliant (Đã duyệt)</span>
+                <span id="audit-badge" class="badge audit-pass-badge hidden">✓ 100% Canon Compliant (Đã kiểm duyệt)</span>
               </div>
               <div class="output-stats">
                 <span id="word-count-badge">0 từ</span>
@@ -189,29 +245,141 @@
               </div>
             </div>
             <div id="prose-output" class="prose-viewport">
-              <p class="placeholder-text">Nhấn nút <strong>"Kích Hoạt Bộ Shell Sinh Chương"</strong> ở trên để bắt đầu sinh văn bản tiểu thuyết theo hợp đồng phân cảnh...</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Tab 2: Visual Comic & Manga Studio -->
-        <div id="tab-content-comic" class="tab-pane">
-          <div class="comic-studio-header">
-            <div>
-              <h2>Visual Storyboard & Manga Panels</h2>
-              <p class="subtitle">Kịch bản phân cảnh truyện tranh tự động sinh kèm góc máy và Prompt AI Art (Flux / SD)</p>
-            </div>
-            <span class="badge galaxy-badge">Visual Galaxy</span>
-          </div>
-
-          <div id="comic-panels-grid" class="panels-grid">
-            <div class="empty-comic-state">
-              <p>Chưa có dữ liệu phân cảnh truyện tranh. Hãy sinh phân cảnh truyện chữ ở Tab 1 trước!</p>
+              <p class="placeholder-text">Nhấn nút <strong>"Kích Hoạt Bộ Shell Sinh Bản Thảo"</strong> ở trên để bắt đầu sinh văn bản tiểu thuyết...</p>
             </div>
           </div>
         </div>
       </section>
+
+      <!-- ================================================================= -->
+      <!-- GALAXY 4: COMIC / MANGA STUDIO (Truyện Tranh)                     -->
+      <!-- ================================================================= -->
+      <section id="galaxy-view-comic" class="galaxy-view">
+        <div class="view-header">
+          <div>
+            <h2>🎨 Visual Comic & Manga Studio (Phân Cảnh Truyện Tranh)</h2>
+            <p class="subtitle">Kịch bản phân cảnh truyện tranh tự động sinh kèm góc máy, bóng thoại, SFX và Prompt AI Art (Flux / SD).</p>
+          </div>
+          <span class="badge galaxy-badge">Visual Galaxy • ComicStoryboardPlugin</span>
+        </div>
+
+        <div id="comic-panels-grid" class="panels-grid">
+          <!-- Injected via JS -->
+        </div>
+      </section>
+
+      <!-- ================================================================= -->
+      <!-- GALAXY 5: UNIVERSE PLUGINS (Bộ Mở Rộng)                           -->
+      <!-- ================================================================= -->
+      <section id="galaxy-view-plugins" class="galaxy-view">
+        <div class="view-header">
+          <div>
+            <h2>🧩 Universe Plugins & Extensions (Hệ Thống Mở Rộng)</h2>
+            <p class="subtitle">Kiến trúc Universe v4.0 cho phép gắn thêm các Module chức năng độc lập không giới hạn.</p>
+          </div>
+        </div>
+
+        <div class="plugins-grid">
+          <div class="plugin-card active-plugin">
+            <div class="plugin-icon">🎨</div>
+            <div class="plugin-info">
+              <div class="plugin-title">
+                <h3>ComicStoryboardPlugin</h3>
+                <span class="badge active-badge">Đang Bật</span>
+              </div>
+              <p class="plugin-desc">Tự động chuyển thể từng phân cảnh truyện chữ thành kịch bản Manga/Webtoon với góc máy, bóng thoại và Prompt hình ảnh.</p>
+              <span class="galaxy-tag">Galaxy: Visual</span>
+            </div>
+          </div>
+
+          <div class="plugin-card active-plugin">
+            <div class="plugin-icon">🛡️</div>
+            <div class="plugin-info">
+              <div class="plugin-title">
+                <h3>ContinuityAuditPlugin</h3>
+                <span class="badge active-badge">Đang Bật</span>
+              </div>
+              <p class="plugin-desc">Kiểm duyệt tính nhất quán của cốt truyện, chống biến dạng nhân vật (OOC) và ngăn chặn vi phạm luật thế giới quan.</p>
+              <span class="galaxy-tag">Galaxy: Quality</span>
+            </div>
+          </div>
+
+          <div class="plugin-card">
+            <div class="plugin-icon">🎙️</div>
+            <div class="plugin-info">
+              <div class="plugin-title">
+                <h3>AudiobookTTSPlugin</h3>
+                <span class="badge planned-badge">Sẵn Sàng Gắn</span>
+              </div>
+              <p class="plugin-desc">Chuyển thể văn bản truyện thành Audio Novel với giọng đọc AI truyền cảm (Edge-TTS / ElevenLabs).</p>
+              <span class="galaxy-tag">Galaxy: Audio</span>
+            </div>
+          </div>
+
+          <div class="plugin-card">
+            <div class="plugin-icon">📦</div>
+            <div class="plugin-info">
+              <div class="plugin-title">
+                <h3>EpubExportPlugin</h3>
+                <span class="badge planned-badge">Sẵn Sàng Gắn</span>
+              </div>
+              <p class="plugin-desc">Xuất bản tác phẩm trọn gói sang định dạng EPUB, PDF có kèm bìa sách và tranh minh họa.</p>
+              <span class="galaxy-tag">Galaxy: Publishing</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
     </main>
+  </div>
+
+  <!-- Modal: Add Character -->
+  <div id="add-char-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>➕ Thêm Nhân Vật Mới</h3>
+        <button class="btn-close" onclick="closeAddCharModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Tên Nhân Vật</label>
+          <input type="text" id="modal-char-name" class="input-glow" placeholder="VD: Tiêu Viêm, Sở Phong">
+        </div>
+        <div class="form-row">
+          <div class="form-group half">
+            <label>Vai Trò</label>
+            <select id="modal-char-role" class="input-glow">
+              <option value="Protagonist">Nhân Vật Chính (Protagonist)</option>
+              <option value="Antagonist">Phản Diện (Antagonist)</option>
+              <option value="Mentor">Tiền Bối / Sư Phụ (Mentor)</option>
+              <option value="Deuteragonist">Nhân Vật Thứ Chính</option>
+              <option value="Sidekick">Bạn Đồng Hành</option>
+              <option value="MinorNPC">Nhân Vật Phụ (NPC)</option>
+            </select>
+          </div>
+          <div class="form-group half">
+            <label>Cảnh Giới / Sức Mạnh</label>
+            <input type="text" id="modal-char-tier" class="input-glow" value="Luyện Khí Tầng 1" placeholder="VD: Luyện Khí Tầng 1">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Động Cơ Cốt Lõi (Motivation)</label>
+          <input type="text" id="modal-char-motivation" class="input-glow" placeholder="VD: Báo thù gia tộc, tìm kiếm thuốc giải">
+        </div>
+        <div class="form-group">
+          <label>Nhược Điểm / Bí Mật</label>
+          <input type="text" id="modal-char-secret" class="input-glow" placeholder="VD: Thể chất suy yếu, giấu thân phận">
+        </div>
+        <div class="form-group">
+          <label>Visual Consistency Tags (Tags vẽ ảnh AI nhất quán)</label>
+          <input type="text" id="modal-char-tags" class="input-glow" value="young male, black hair, blue robe, sharp eyes">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeAddCharModal()">Hủy</button>
+        <button class="btn btn-primary" onclick="submitAddCharacter()">Lưu Nhân Vật</button>
+      </div>
+    </div>
   </div>
 
   <script src="app.js"></script>

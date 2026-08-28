@@ -10,6 +10,7 @@ from novel_engine.core.state import (
     Faction,
     Location,
     CharacterDossier,
+    CharacterRole,
     PersonalityTraits,
     SpeechStyle,
     CharacterStatus,
@@ -34,7 +35,6 @@ class MockLLMAdapter(BaseLLMAdapter):
         temperature: float = 0.7,
         max_tokens: int = 4096
     ) -> str:
-        # Returns a high-quality sample prose in Vietnamese/English
         return (
             "Hoàng hôn đỏ quạch như máu nhuộm đỏ cả khoảng sân của Lâm Gia. "
             "Lâm Phong đứng thẳng người giữa sảnh Nghị Sự, bờ vai phải vẫn còn rỉ máu từ vết thương cũ, "
@@ -67,33 +67,123 @@ class MockLLMAdapter(BaseLLMAdapter):
         system_prompt: Optional[str] = None,
         temperature: float = 0.2
     ) -> T:
-        # Deterministically generate mock instances based on requested model schema
-        if response_model.__name__ == "WorldBible":
+        name = response_model.__name__
+
+        if name == "WorldBible":
             return WorldBible(
                 world_id="w_canglan",
                 title="Thương Lam Giới (Canglan Realm)",
                 genre="Xianxia",
-                era_setting="Kỷ nguyên Mạt Pháp",
-                energy_source="Thiên Địa Linh Khí",
+                era_setting="Kỷ nguyên Mạt Pháp Vạn Năm",
+                energy_source="Thiên Địa Linh Khí & Cổ Ma Khí",
                 power_progression=[
-                    PowerTier(rank=1, name="Luyện Khí Kỳ", description="Hấp thu linh khí tôi luyện gân cốt", hard_limits="Không thể bay lượn trên không trung"),
-                    PowerTier(rank=2, name="Trúc Cơ Kỳ", description="Ngưng tụ linh dịch, thọ mệnh 200 năm", hard_limits="Chưa thể ngưng kết Kim Đan bất tử"),
-                    PowerTier(rank=3, name="Kim Đan Kỳ", description="Kim đan bất hoại, ngự kiếm phi hành", hard_limits="Không thể phá toái hư không")
+                    PowerTier(rank=1, name="Luyện Khí Kỳ", description="Hấp thu linh khí tôi luyện kinh mạch gân cốt", hard_limits="Không thể phi hành trên không"),
+                    PowerTier(rank=2, name="Trúc Cơ Kỳ", description="Linh khí hóa dịch thể, thọ mệnh 200 năm", hard_limits="Chưa thể ngưng kết Kim Đan bất hoại"),
+                    PowerTier(rank=3, name="Kim Đan Kỳ", description="Kim đan bất toái, ngự kiếm phi hành ngàn dặm", hard_limits="Chưa thể xuất hồn đoạt xá"),
+                    PowerTier(rank=4, name="Nguyên Anh Kỳ", description="Nguyên anh xuất khiếu, dời non lấp biển", hard_limits="Không thể phá toái hư không")
                 ],
                 canon_rules=[
-                    "Phàm nhân không có linh căn vĩnh viễn không thể tu luyện chân khí.",
-                    "Linh thạch một khi đã rút cạn năng lượng sẽ hóa thành tro bụi.",
-                    "Chênh lệch mỗi một đại cảnh giới là khoảng cách một trời một vực."
+                    "Phàm nhân không có linh căn vĩnh viễn không thể hấp thu linh khí.",
+                    "Linh thạch một khi đã rút cạn năng lượng sẽ tự động hóa thành cát bụi vô dụng.",
+                    "Chênh lệch mỗi một đại cảnh giới là khoảng cách hồng hào không thể bù đắp bằng số lượng.",
+                    "Cổ Ma Khí sẽ ăn mòn thần trí của bất kỳ tu sĩ nào chưa đạt Nguyên Anh."
                 ],
                 factions=[
-                    Faction(faction_id="fac_lin", name="Lâm Gia", alignment="Trung lập suy tàn", core_doctrine="Bảo vệ gia tộc bằng mọi giá")
+                    Faction(faction_id="fac_lin", name="Lâm Gia", alignment="Trung lập suy tàn", core_doctrine="Bảo tồn gia tộc huyết mạch"),
+                    Faction(faction_id="fac_trieu", name="Triệu Thị Gia Tộc", alignment="Phản diện bành trướng", core_doctrine="Thôn tính các gia tộc nhỏ yếu"),
+                    Faction(faction_id="fac_van", name="Vân Lam Kiếm Tông", alignment="Chính đạo bá chủ", core_doctrine="Chưởng quản kiếm đạo phương bắc")
                 ],
                 locations=[
-                    Location(location_id="loc_hall", name="Lâm Gia - Hội Nghị Đường", climate_and_vibe="Uy nghiêm, ngột ngạt", key_hazards="Trận pháp áp chế của trưởng lão")
+                    Location(location_id="loc_hall", name="Lâm Gia - Hội Nghị Đường", climate_and_vibe="Uy nghiêm, ngột ngạt, vương mùi trầm hương", key_hazards="Trận pháp áp chế tu vi của Trưởng lão"),
+                    Location(location_id="loc_forest", name="Hắc Ám Sâm Lâm", climate_and_vibe="Mù mịt chướng khí, đêm tối vĩnh hằng", key_hazards="Yêu thú bậc 3 và bẫy độc tự nhiên"),
+                    Location(location_id="loc_peak", name="Thiên Kiếm Phong", climate_and_vibe="Băng hàn thấu xương, mây mù bao phủ", key_hazards="Kiếm khí tàn lưu từ thời thượng cổ")
                 ]
             )  # type: ignore
 
-        if response_model.__name__ == "ComicStoryboard":
+        if name == "GeneratedCharacterList":
+            from novel_engine.engine import GeneratedCharacterList
+            return GeneratedCharacterList(
+                characters=[
+                    CharacterDossier(
+                        character_id="char_lin_feng",
+                        name="Lâm Phong",
+                        role=CharacterRole.PROTAGONIST,
+                        visual_tags=["young male 18yo", "long black hair in high ponytail", "sharp piercing obsidian eyes", "tattered blue cultivator robe", "slender lean build", "silver ancient ring on thumb"],
+                        personality=PersonalityTraits(
+                            core_motivation="Bảo vệ muội muội Lâm Tuyết và rửa sạch mối oan cho gia phụ",
+                            fatal_flaw="Cố chấp, cực kỳ đa nghi và ít tin tưởng người ngoài",
+                            moral_boundary="Tuyệt đối không ra tay với phàm nhân vô tội",
+                            hidden_secret="Đang chứa chấp tàn hồn Dược Lão vạn năm trong nhẫn hắc thiết"
+                        ),
+                        speech=SpeechStyle(vocabulary_level="Đanh thép, dứt khoát, kiệm lời"),
+                        status=CharacterStatus(power_tier="Luyện Khí Tầng 3", health_condition="Bị thương vai phải do ám tiễn", mental_state="Lạnh lùng cảnh giác"),
+                        inventory=[InventoryItem(item_id="item_ring", name="Hắc Thiết Nhẫn"), InventoryItem(item_id="item_pouch", name="Túi Trữ Vật 500 Linh Thạch")]
+                    ),
+                    CharacterDossier(
+                        character_id="char_elder_zhao",
+                        name="Đại Trưởng Lão Triệu Bá",
+                        role=CharacterRole.ANTAGONIST,
+                        visual_tags=["old male 65yo", "long grey goatee", "sinister cunning eyes", "luxurious crimson silk robes", "emerald jade thumb ring", "cruel arrogant smirk"],
+                        personality=PersonalityTraits(
+                            core_motivation="Thâu tóm toàn bộ gia sản Lâm Gia để mua Trúc Cơ Đan cho con trai",
+                            fatal_flaw="Tham lam vô độ và khinh địch tột cùng",
+                            moral_boundary="Không từ thủ đoạn để đạt được lợi ích",
+                            hidden_secret="Đã ngầm cấu kết với Ma Tu Hắc Ma Môn"
+                        ),
+                        speech=SpeechStyle(vocabulary_level="Quan cách, mỉa mai, trịch thượng"),
+                        status=CharacterStatus(power_tier="Luyện Khí Tầng 9 (Bán Bộ Trúc Cơ)", health_condition="Khỏe mạnh sung mãn", mental_state="Tự đắc"),
+                        inventory=[InventoryItem(item_id="item_sword", name="Thanh Sương Kiếm"), InventoryItem(item_id="item_contract", name="Khế ước Vân Hà Ngọc Bội")]
+                    ),
+                    CharacterDossier(
+                        character_id="char_lin_xue",
+                        name="Lâm Tuyết",
+                        role=CharacterRole.SIDEKICK,
+                        visual_tags=["young female 15yo", "fair porcelain skin", "soft dark eyes", "pale lavender dress", "fragile graceful posture"],
+                        personality=PersonalityTraits(
+                            core_motivation="Không muốn trở thành gánh nặng cho ca ca",
+                            fatal_flaw="Quá ngây thơ và dễ mềm lòng",
+                            moral_boundary="Yêu thương gia đình tuyệt đối",
+                            hidden_secret="Sở hữu Thể Chất Cửu Âm Tuyệt Mạch thức tỉnh"
+                        ),
+                        speech=SpeechStyle(vocabulary_level="Dịu dàng, ấm áp"),
+                        status=CharacterStatus(power_tier="Chưa tu luyện (Phàm nhân)", health_condition="Hàn khí công tâm thường xuyên", mental_state="Lo lắng cho ca ca")
+                    ),
+                    CharacterDossier(
+                        character_id="char_duoc_lao",
+                        name="Dược Lão (Cổ Hồn)",
+                        role=CharacterRole.MENTOR,
+                        visual_tags=["ethereal translucent spirit", "ancient white beard and hair", "glowing ethereal white robes", "wise enigmatic smile"],
+                        personality=PersonalityTraits(
+                            core_motivation="Tìm kiếm thể xác hoàn mỹ để tái sinh và trả thù đệ tử phản bội",
+                            fatal_flaw="Nghiện luyện đan kỳ dị và thích thử thách người khác",
+                            moral_boundary="Chỉ giúp kẻ có ý chí kiên định",
+                            hidden_secret="Từng là Bát Phẩm Đan Tôn chấn động Cửu Giới"
+                        ),
+                        speech=SpeechStyle(vocabulary_level="Cổ ngữ uyên bác, bông đùa sâu cay"),
+                        status=CharacterStatus(power_tier="Linh hồn tàn khuyết (Tương đương Kim Đan)", health_condition="Linh hồn yếu ớt cần đan dược nuôi dưỡng", mental_state="Trầm ổn"),
+                        inventory=[InventoryItem(item_id="item_flame", name="Cốt Linh Lãnh Hỏa (Dị Hỏa)")]
+                    )
+                ]
+            )  # type: ignore
+
+        if name == "WorldExpansionResult":
+            from novel_engine.engine import WorldExpansionResult
+            return WorldExpansionResult(
+                new_factions=[
+                    Faction(faction_id="fac_hac_ma", name="Hắc Ma Môn", alignment="Tà phái tàn độc", core_doctrine="Huyết tế tế linh để thăng cấp"),
+                    Faction(faction_id="fac_dan_cac", name="Bách Thảo Đan Các", alignment="Trung lập thương gia", core_doctrine="Độc quyền thảo dược và đan dược toàn châu")
+                ],
+                new_locations=[
+                    Location(location_id="loc_grave", name="Vạn Ma Cổ Mộ", climate_and_vibe="Âm phong gào thét, ngập tràn sát khí cổ đại", key_hazards="Thi độc ngàn năm và oán linh chiến trường"),
+                    Location(location_id="loc_spring", name="Cửu U Băng Tuyền", climate_and_vibe="Hàn băng vĩnh cửu không tan", key_hazards="Nhiệt độ âm trăm độ đóng băng kinh mạch")
+                ],
+                new_canon_rules=[
+                    "Dị Hỏa thiên địa khi dung hợp nếu không có đan dược áp chế sẽ thiêu rụi kinh mạch.",
+                    "Linh hồn tàn khuyết chỉ có thể xuất hiện trong bóng tối hoặc bên trong kết giới cấm chế."
+                ]
+            )  # type: ignore
+
+        if name == "ComicStoryboard":
             return ComicStoryboard(
                 storyboard_id="sb_ch01_sc01",
                 scene_id="SC01",
@@ -129,4 +219,4 @@ class MockLLMAdapter(BaseLLMAdapter):
                 ]
             )  # type: ignore
 
-        raise ValueError(f"Mock for schema {response_model.__name__} not implemented.")
+        raise ValueError(f"Mock for schema {name} not implemented.")

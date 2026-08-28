@@ -2,6 +2,7 @@
 
 import json
 from typing import Callable, Dict, List, Optional
+from pydantic import BaseModel, Field
 from novel_engine.adapters.base import BaseLLMAdapter
 from novel_engine.core.event_bus import EventBus
 from novel_engine.core.events import (
@@ -12,7 +13,15 @@ from novel_engine.core.events import (
 from novel_engine.core.state import (
     StoryState,
     WorldBible,
+    PowerTier,
+    Faction,
+    Location,
     CharacterDossier,
+    CharacterRole,
+    PersonalityTraits,
+    SpeechStyle,
+    CharacterStatus,
+    InventoryItem,
     SceneContract,
     SceneDraft
 )
@@ -20,8 +29,18 @@ from novel_engine.core.context_builder import ContextBuilder
 from novel_engine.plugins.base import INovelPlugin
 
 
+class GeneratedCharacterList(BaseModel):
+    characters: List[CharacterDossier] = Field(default_factory=list)
+
+
+class WorldExpansionResult(BaseModel):
+    new_factions: List[Faction] = Field(default_factory=list)
+    new_locations: List[Location] = Field(default_factory=list)
+    new_canon_rules: List[str] = Field(default_factory=list)
+
+
 class NovelDirectorEngine:
-    """Micro-Kernel Director Engine implementing Universe Plugin Architecture v4.0."""
+    """Micro-Kernel Director Engine implementing Universe Architecture v4.0."""
 
     def __init__(self, adapter: BaseLLMAdapter, event_bus: Optional[EventBus] = None):
         self.adapter = adapter
@@ -65,22 +84,84 @@ class NovelDirectorEngine:
             chapters=[]
         )
 
-        # Notify Plugins & EventBus
         for plugin in self.plugins:
             await plugin.on_story_initialized(self.state)
 
         await self.event_bus.publish(StoryInitializedEvent(story_state=self.state))
         return self.state
 
+    async def auto_generate_characters(self, count: int = 3, roles_focus: str = "Protagonist, Antagonist, Mentor") -> List[CharacterDossier]:
+        """Automatically generates a cast of consistent, multi-dimensional characters."""
+        if not self.state:
+            raise ValueError("StoryState not initialized.")
+
+        prompt = f"""
+You are a master character designer and novelist.
+Based on the following World Bible, generate {count} unique, compelling characters.
+
+WORLD TITLE: {self.state.world_bible.title}
+GENRE: {self.state.genre}
+POWER SYSTEM: {self.state.world_bible.energy_source}
+ROLES FOCUS: {roles_focus}
+
+Each character must have:
+- Distinct name and role (Protagonist, Antagonist, Mentor, Deuteragonist, Sidekick)
+- Core motivation, fatal flaw, and hidden secret
+- Unique speech vocabulary style
+- Current power status and health condition
+- Detailed Visual Tags (for consistent AI art generation, e.g. age, hairstyle, robe color, physical marks)
+
+Output JSON conforming to GeneratedCharacterList schema.
+"""
+        result = await self.adapter.generate_structured(
+            prompt=prompt,
+            response_model=GeneratedCharacterList,
+            temperature=0.7
+        )
+
+        for char in result.characters:
+            self.register_character(char)
+
+        return result.characters
+
+    async def auto_evolve_world(self, focus_topic: str = "Secret Factions & Ancient Locations") -> WorldExpansionResult:
+        """Expands and enriches the existing world with new lore, locations, and factions."""
+        if not self.state:
+            raise ValueError("StoryState not initialized.")
+
+        prompt = f"""
+You are a master worldbuilder. Expand the universe lore for:
+WORLD: {self.state.world_bible.title}
+GENRE: {self.state.genre}
+ENERGY SOURCE: {self.state.world_bible.energy_source}
+FOCUS: {focus_topic}
+
+Generate 2 new mysterious factions, 2 dangerous uncharted locations, and 2 new canon rules.
+Output JSON conforming to WorldExpansionResult schema.
+"""
+        result = await self.adapter.generate_structured(
+            prompt=prompt,
+            response_model=WorldExpansionResult,
+            temperature=0.6
+        )
+
+        # Merge into existing WorldBible
+        self.state.world_bible.factions.extend(result.new_factions)
+        self.state.world_bible.locations.extend(result.new_locations)
+        self.state.world_bible.canon_rules.extend(result.new_canon_rules)
+
+        return result
+
     def register_character(self, character: CharacterDossier):
-        """Registers a character and broadcasts CharacterRegisteredEvent."""
+        """Registers a character and stores in character matrix."""
         if not self.state:
             raise ValueError("StoryState not initialized. Call initialize_story first.")
         self.state.characters[character.character_id] = character
 
-        # Fire domain event asynchronously
-        # (In event loop)
-        # self.event_bus.publish(CharacterRegisteredEvent(story_id=self.state.story_id, character=character))
+    def delete_character(self, character_id: str):
+        """Deletes a character from matrix."""
+        if self.state and character_id in self.state.characters:
+            del self.state.characters[character_id]
 
     async def draft_scene(
         self,
@@ -99,7 +180,7 @@ class NovelDirectorEngine:
         # 2. Build Micro-Context
         prompt = ContextBuilder.build_scene_prompt(self.state, active_contract)
 
-        # 3. Draft Prose (Streaming if on_token provided)
+        # 3. Draft Prose
         if on_token:
             prose = await self.adapter.stream_text(
                 prompt=prompt,
@@ -115,12 +196,12 @@ class NovelDirectorEngine:
             prose_content=prose
         )
 
-        # 4. Post-draft Plugin Middleware Pipeline (Auditing, Comic Storyboard, etc.)
+        # 4. Post-draft Plugin Middleware Pipeline
         final_draft = initial_draft
         for plugin in self.plugins:
             final_draft = await plugin.post_scene_draft(self.state, final_draft)
 
-        # 5. Broadcast SceneDraftedEvent to Galaxy Listeners
+        # 5. Broadcast Event
         await self.event_bus.publish(
             SceneDraftedEvent(
                 story_id=self.state.story_id,

@@ -18,6 +18,7 @@ from novel_engine.adapters.mock_adapter import MockLLMAdapter
 from novel_engine.engine import NovelDirectorEngine
 from novel_engine.plugins.comic_storyboard_plugin import ComicStoryboardPlugin
 from novel_engine.plugins.continuity_audit_plugin import ContinuityAuditPlugin
+from novel_engine.plugins.file_persistence_plugin import FilePersistencePlugin
 from novel_engine.core.events import SceneDraftedEvent, CanonViolationDetectedEvent
 from novel_engine.core.state import (
     CharacterDossier,
@@ -48,6 +49,7 @@ async def main():
     print("\n[Spacetime] Registering Galaxy Plugins into Universe Micro-Kernel...")
     engine.register_plugin(ContinuityAuditPlugin(strict_mode=True))
     engine.register_plugin(ComicStoryboardPlugin(enabled=True))
+    engine.register_plugin(FilePersistencePlugin(base_output_dir="output/stories"))
     for p in engine.plugins:
         print(f"  ⭐ Registered Star: '{p.plugin_name}' in Galaxy: [{p.galaxy}]")
 
