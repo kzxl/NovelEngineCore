@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NovelEngineCore - Universe Architecture v4.0 Story & Comic Studio</title>
+  <title>NovelEngineCore - RPG Story Director & Comic Studio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
@@ -17,7 +17,7 @@
         <div class="logo-orb"></div>
         <div class="brand-text">
           <h1>NovelEngine<span>Core</span></h1>
-          <p class="subtitle">Universe Architecture v4.0 • Autonomous AI Director & Comic Studio</p>
+          <p class="subtitle">Universe Architecture v4.0 • Autonomous RPG Director & Comic Studio</p>
         </div>
       </div>
 
@@ -29,14 +29,14 @@
         <button id="nav-characters" class="nav-pill" onclick="switchGalaxy('characters')">
           👥 2. Dàn Nhân Vật <span id="char-count-badge" class="count-bubble">0</span>
         </button>
+        <button id="nav-rpg" class="nav-pill" onclick="switchGalaxy('rpg')">
+          🎮 3. Nhật Ký Khám Phá (RPG Codex) <span id="discovery-count-badge" class="count-bubble discovery-bubble">2</span>
+        </button>
         <button id="nav-novel" class="nav-pill" onclick="switchGalaxy('novel')">
-          📖 3. Viết Truyện Chữ
+          📖 4. Viết Truyện & Số Phận
         </button>
         <button id="nav-comic" class="nav-pill" onclick="switchGalaxy('comic')">
-          🎨 4. Phân Cảnh Comic
-        </button>
-        <button id="nav-plugins" class="nav-pill" onclick="switchGalaxy('plugins')">
-          🧩 5. Bộ Mở Rộng
+          🎨 5. Phân Cảnh Comic
         </button>
       </nav>
 
@@ -45,14 +45,13 @@
         <div class="model-badge">
           <span class="pulse-dot"></span>
           <select id="model-select" class="glow-select">
-            <option value="mock">⚡ Mock Engine (Demo Tức Thì / 0đ)</option>
-            <option value="ollama/qwen2.5-coder:3b">🟢 Local Ollama (qwen2.5-coder:3b)</option>
+            <option value="ollama/qwen2.5-coder:3b" selected>🟢 Local Ollama (qwen2.5-coder:3b)</option>
             <option value="ollama/qwen2.5-coder:1.5b">🟢 Local Ollama (qwen2.5-coder:1.5b - Siêu Nhanh)</option>
+            <option value="ollama/qwen2.5:0.5b">🟢 Local Ollama (qwen2.5:0.5b - Siêu Nhẹ)</option>
             <option value="ollama/qwen2.5:3b">🟢 Local Ollama (qwen2.5:3b - Văn Học)</option>
             <option value="deepseek/deepseek-chat">DeepSeek-V3 (Cloud API)</option>
             <option value="claude-3-5-sonnet">Claude 3.5 Sonnet (Cloud API)</option>
             <option value="gpt-4o">OpenAI GPT-4o (Cloud API)</option>
-            <option value="gemini/gemini-1.5-flash">Gemini 1.5 Flash (Cloud API)</option>
           </select>
         </div>
       </div>
@@ -81,7 +80,6 @@
         </div>
 
         <div class="world-grid">
-          <!-- Left Column: Core Cosmology & Power System -->
           <div class="panel-card">
             <div class="panel-header">
               <span class="badge galaxy-badge">Cosmology & Power</span>
@@ -108,20 +106,16 @@
               </div>
             </div>
             <div class="form-group">
-              <label>Cốt Truyện Tổng Quan (Premise / Logline)</label>
-              <textarea id="world-logline" class="input-glow" rows="3">Một thiếu niên phế vật mang mối thù gia tộc tìm được chiếc nhẫn cổ thời thượng cổ, từng bước quật khởi đối đầu tông môn hủ bại.</textarea>
+              <label>Cốt Truyện Tổng Quan (Logline)</label>
+              <textarea id="world-logline" class="input-glow" rows="3">Một thiếu niên phế vật mang mối thù gia tộc tìm được chiếc nhẫn cổ thời thượng cổ, từng bước quật khởi đối đầu tông môn.</textarea>
             </div>
 
-            <!-- Power Tiers Progression -->
             <div class="form-group">
               <label>Hệ Thống Cảnh Giới Tu Luyện (Power Progression & Hard Limits)</label>
-              <div id="power-tiers-list" class="stacked-list">
-                <!-- Injected via JS -->
-              </div>
+              <div id="power-tiers-list" class="stacked-list"></div>
             </div>
           </div>
 
-          <!-- Right Column: Canon Rules, Factions & Locations -->
           <div class="panel-card">
             <div class="panel-header">
               <span class="badge contract-badge">Canon Laws & Locations</span>
@@ -129,24 +123,18 @@
             </div>
 
             <div class="form-group">
-              <label>Luật Bất Biến (Canon Rules - LLM Tuyệt Đối Không Được Phá)</label>
-              <div id="canon-rules-container" class="tag-cloud">
-                <!-- Injected via JS -->
-              </div>
+              <label>Luật Bất Biến (Canon Rules - Không Thể Phá Vỡ)</label>
+              <div id="canon-rules-container" class="tag-cloud"></div>
             </div>
 
             <div class="form-group">
               <label>Môn Phái & Thế Lực (Factions Matrix)</label>
-              <div id="factions-container" class="factions-list">
-                <!-- Injected via JS -->
-              </div>
+              <div id="factions-container" class="factions-list"></div>
             </div>
 
             <div class="form-group">
               <label>Địa Danh & Cấm Địa (Locations & Hazards)</label>
-              <div id="locations-container" class="locations-list">
-                <!-- Injected via JS -->
-              </div>
+              <div id="locations-container" class="locations-list"></div>
             </div>
           </div>
         </div>
@@ -171,53 +159,89 @@
           </div>
         </div>
 
-        <!-- Characters Grid -->
-        <div id="characters-roster-grid" class="roster-grid">
-          <!-- Injected via JS -->
+        <div id="characters-roster-grid" class="roster-grid"></div>
+      </section>
+
+      <!-- ================================================================= -->
+      <!-- GALAXY 3: RPG DISCOVERY CODEX DASHBOARD (Nhật Ký Khám Phá Game)   -->
+      <!-- ================================================================= -->
+      <section id="galaxy-view-rpg" class="galaxy-view">
+        <div class="view-header">
+          <div>
+            <h2>🎮 RPG Discovery Codex Dashboard (Nhật Ký Khám Phá & Chỉ Số)</h2>
+            <p class="subtitle">Tự động thu thập vật phẩm, mở khóa cấm địa và theo dõi chỉ số HP, Level, Khí Vận của nhân vật.</p>
+          </div>
+          <div class="action-buttons">
+            <button class="btn btn-secondary" onclick="refreshDiscoveryCodex()">🔄 Làm Mới Codex</button>
+          </div>
+        </div>
+
+        <div class="rpg-grid">
+          <!-- Left: Character RPG Stat Cards -->
+          <div class="panel-card">
+            <div class="panel-header">
+              <span class="badge active-badge">Character RPG Status</span>
+              <h3>Chỉ Số & Khí Vận Nhân Vật</h3>
+            </div>
+            <div id="rpg-stats-container" class="rpg-stats-list">
+              <!-- Injected via JS -->
+            </div>
+          </div>
+
+          <!-- Right: Discovery Stream (Loot, Locations, Clues) -->
+          <div class="panel-card">
+            <div class="panel-header">
+              <span class="badge galaxy-badge">Discovery Stream</span>
+              <h3>Nhật Ký Chiến Lợi Phẩm & Bí Mật Đã Mở Khóa</h3>
+            </div>
+            <div id="discovery-entries-container" class="discovery-entries-list">
+              <!-- Injected via JS -->
+            </div>
+          </div>
         </div>
       </section>
 
       <!-- ================================================================= -->
-      <!-- GALAXY 3: NOVEL DRAFTING STUDIO (Viết Truyện Chữ)                 -->
+      <!-- GALAXY 4: NOVEL DRAFTING & FATE DIRECTIVES (Viết Truyện & Số Phận) -->
       <!-- ================================================================= -->
       <section id="galaxy-view-novel" class="galaxy-view">
         <div class="drafting-layout">
-          <!-- Left: Scene Contract Builder -->
+          <!-- Left: Scene Contract Builder & Fate Choices -->
           <div class="scene-contract-card">
             <div class="contract-header">
               <div class="contract-title-group">
-                <span class="badge contract-badge">Scene Contract Directive</span>
+                <span class="badge contract-badge">Director Directive & Fate Control</span>
                 <h3>Hợp Đồng Phân Cảnh: Hồi 1 - Chương 1 (Cảnh 1)</h3>
-              </div>
-              <div class="contract-meta">
-                <span>📍 Lâm Gia - Hội Nghị Đường</span> • <span>⏰ Hoàng Hôn</span>
               </div>
             </div>
 
-            <div class="contract-grid">
-              <div class="contract-item">
-                <span class="label">Nhân vật có mặt trong cảnh:</span>
-                <p id="contract-characters">Lâm Phong (Chính), Đại Trưởng Lão Triệu (Phản diện)</p>
+            <!-- Chapter Cast Controls -->
+            <div class="cast-control-box">
+              <div class="form-row">
+                <div class="form-group half">
+                  <label>Số lượng nhân vật tham gia:</label>
+                  <select id="cast-size-select" class="input-glow">
+                    <option value="1">1 Nhân vật (Độc thoại / Đột phá)</option>
+                    <option value="2" selected>2 Nhân vật (Song đấu / Đối thoại nảy lửa)</option>
+                    <option value="3">3 Nhân vật (Tổ đội / Tam giác xung đột)</option>
+                    <option value="4">4 Nhân vật (Hội nghị / Tông môn loạn đấu)</option>
+                  </select>
+                </div>
+                <div class="form-group half">
+                  <label>Nhân vật tâm điểm (Spotlight):</label>
+                  <select id="spotlight-char-select" class="input-glow">
+                    <option value="char_lin_feng">Lâm Phong (Main)</option>
+                    <option value="char_elder_zhao">Đại Trưởng Lão Triệu</option>
+                  </select>
+                </div>
               </div>
-              <div class="contract-item">
-                <span class="label">Mục tiêu cảnh (Goal):</span>
-                <p id="contract-goal">Lâm Phong đến trả 500 linh thạch để chuộc lại Vân Hà Ngọc Bội của mẫu thân.</p>
-              </div>
-              <div class="contract-item">
-                <span class="label">Xung đột chính (Conflict):</span>
-                <p id="contract-conflict">Đại Trưởng Lão Triệu ép giá tăng gấp đôi lên 1,000 linh thạch và công khai sỉ nhục.</p>
-              </div>
-              <div class="contract-item">
-                <span class="label">Nút thắt kết cảnh (Cliffhanger Hook):</span>
-                <p id="contract-hook">Triệu trưởng lão nhận ra luồng linh khí cổ xưa trên ngọc bội và ra lệnh phong tỏa toàn bộ lối ra.</p>
-              </div>
-              <div class="contract-item constraints-item">
-                <span class="label">Luật Cấm Tuyệt Đối (Hard Negative Constraints):</span>
-                <ul id="contract-constraints">
-                  <li>🚫 Lâm Phong chưa đạt Trúc Cơ, TUYỆT ĐỐI KHÔNG được giết Trưởng Lão trong cảnh này.</li>
-                  <li>🚫 Không được để lộ danh tính linh hồn trong chiếc nhẫn.</li>
-                  <li>🚫 Văn phong sắc sảo, dồn dập (Show, don't tell).</li>
-                </ul>
+            </div>
+
+            <!-- Fate Choices / Destiny Decision -->
+            <div class="fate-choices-box">
+              <label class="fate-title-label">🌟 Chọn Ngã Rẽ Số Phận Cho Nhân Vật (Player Directive):</label>
+              <div id="fate-choices-container" class="fate-choices-list">
+                <!-- Injected via JS -->
               </div>
             </div>
 
@@ -237,13 +261,18 @@
             <div class="output-header">
               <div class="output-title">
                 <h3>Bản Thảo Tiểu Thuyết (Văn Xuôi Chi Tiết)</h3>
-                <span id="audit-badge" class="badge audit-pass-badge hidden">✓ 100% Canon Compliant (Đã kiểm duyệt)</span>
+                <span id="audit-badge" class="badge audit-pass-badge hidden">✓ 100% Canon Compliant</span>
               </div>
               <div class="output-stats">
                 <span id="word-count-badge">0 từ</span>
                 <button class="btn btn-sm" onclick="copyProse()">📋 Sao chép</button>
               </div>
             </div>
+            
+            <div id="file-saved-alert" class="saved-file-alert hidden">
+              💾 <strong>Tự động lưu file thành công:</strong> <span id="saved-file-name">output/stories/novel_manuscript.md</span>
+            </div>
+
             <div id="prose-output" class="prose-viewport">
               <p class="placeholder-text">Nhấn nút <strong>"Kích Hoạt Bộ Shell Sinh Bản Thảo"</strong> ở trên để bắt đầu sinh văn bản tiểu thuyết...</p>
             </div>
@@ -252,7 +281,7 @@
       </section>
 
       <!-- ================================================================= -->
-      <!-- GALAXY 4: COMIC / MANGA STUDIO (Truyện Tranh)                     -->
+      <!-- GALAXY 5: COMIC / MANGA STUDIO (Truyện Tranh)                     -->
       <!-- ================================================================= -->
       <section id="galaxy-view-comic" class="galaxy-view">
         <div class="view-header">
@@ -260,74 +289,10 @@
             <h2>🎨 Visual Comic & Manga Studio (Phân Cảnh Truyện Tranh)</h2>
             <p class="subtitle">Kịch bản phân cảnh truyện tranh tự động sinh kèm góc máy, bóng thoại, SFX và Prompt AI Art (Flux / SD).</p>
           </div>
-          <span class="badge galaxy-badge">Visual Galaxy • ComicStoryboardPlugin</span>
+          <span class="badge galaxy-badge">Visual Galaxy</span>
         </div>
 
-        <div id="comic-panels-grid" class="panels-grid">
-          <!-- Injected via JS -->
-        </div>
-      </section>
-
-      <!-- ================================================================= -->
-      <!-- GALAXY 5: UNIVERSE PLUGINS (Bộ Mở Rộng)                           -->
-      <!-- ================================================================= -->
-      <section id="galaxy-view-plugins" class="galaxy-view">
-        <div class="view-header">
-          <div>
-            <h2>🧩 Universe Plugins & Extensions (Hệ Thống Mở Rộng)</h2>
-            <p class="subtitle">Kiến trúc Universe v4.0 cho phép gắn thêm các Module chức năng độc lập không giới hạn.</p>
-          </div>
-        </div>
-
-        <div class="plugins-grid">
-          <div class="plugin-card active-plugin">
-            <div class="plugin-icon">🎨</div>
-            <div class="plugin-info">
-              <div class="plugin-title">
-                <h3>ComicStoryboardPlugin</h3>
-                <span class="badge active-badge">Đang Bật</span>
-              </div>
-              <p class="plugin-desc">Tự động chuyển thể từng phân cảnh truyện chữ thành kịch bản Manga/Webtoon với góc máy, bóng thoại và Prompt hình ảnh.</p>
-              <span class="galaxy-tag">Galaxy: Visual</span>
-            </div>
-          </div>
-
-          <div class="plugin-card active-plugin">
-            <div class="plugin-icon">🛡️</div>
-            <div class="plugin-info">
-              <div class="plugin-title">
-                <h3>ContinuityAuditPlugin</h3>
-                <span class="badge active-badge">Đang Bật</span>
-              </div>
-              <p class="plugin-desc">Kiểm duyệt tính nhất quán của cốt truyện, chống biến dạng nhân vật (OOC) và ngăn chặn vi phạm luật thế giới quan.</p>
-              <span class="galaxy-tag">Galaxy: Quality</span>
-            </div>
-          </div>
-
-          <div class="plugin-card">
-            <div class="plugin-icon">🎙️</div>
-            <div class="plugin-info">
-              <div class="plugin-title">
-                <h3>AudiobookTTSPlugin</h3>
-                <span class="badge planned-badge">Sẵn Sàng Gắn</span>
-              </div>
-              <p class="plugin-desc">Chuyển thể văn bản truyện thành Audio Novel với giọng đọc AI truyền cảm (Edge-TTS / ElevenLabs).</p>
-              <span class="galaxy-tag">Galaxy: Audio</span>
-            </div>
-          </div>
-
-          <div class="plugin-card">
-            <div class="plugin-icon">📦</div>
-            <div class="plugin-info">
-              <div class="plugin-title">
-                <h3>EpubExportPlugin</h3>
-                <span class="badge planned-badge">Sẵn Sàng Gắn</span>
-              </div>
-              <p class="plugin-desc">Xuất bản tác phẩm trọn gói sang định dạng EPUB, PDF có kèm bìa sách và tranh minh họa.</p>
-              <span class="galaxy-tag">Galaxy: Publishing</span>
-            </div>
-          </div>
-        </div>
+        <div id="comic-panels-grid" class="panels-grid"></div>
       </section>
 
     </main>
@@ -359,12 +324,12 @@
           </div>
           <div class="form-group half">
             <label>Cảnh Giới / Sức Mạnh</label>
-            <input type="text" id="modal-char-tier" class="input-glow" value="Luyện Khí Tầng 1" placeholder="VD: Luyện Khí Tầng 1">
+            <input type="text" id="modal-char-tier" class="input-glow" value="Luyện Khí Tầng 1">
           </div>
         </div>
         <div class="form-group">
           <label>Động Cơ Cốt Lõi (Motivation)</label>
-          <input type="text" id="modal-char-motivation" class="input-glow" placeholder="VD: Báo thù gia tộc, tìm kiếm thuốc giải">
+          <input type="text" id="modal-char-motivation" class="input-glow" placeholder="VD: Báo thù gia tộc, tìm thuốc giải">
         </div>
         <div class="form-group">
           <label>Nhược Điểm / Bí Mật</label>

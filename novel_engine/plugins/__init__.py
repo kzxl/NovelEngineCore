@@ -3,10 +3,12 @@ from novel_engine.plugins.base import INovelPlugin
 from novel_engine.plugins.comic_storyboard_plugin import ComicStoryboardPlugin
 from novel_engine.plugins.continuity_audit_plugin import ContinuityAuditPlugin
 from novel_engine.plugins.file_persistence_plugin import FilePersistencePlugin
+from novel_engine.plugins.rpg_discovery_plugin import RPGDiscoveryPlugin
 
 __all__ = [
     "INovelPlugin",
     "ComicStoryboardPlugin",
     "ContinuityAuditPlugin",
-    "FilePersistencePlugin"
+    "FilePersistencePlugin",
+    "RPGDiscoveryPlugin"
 ]

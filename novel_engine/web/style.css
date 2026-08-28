@@ -1,5 +1,5 @@
 /* ==========================================================================
-   NovelEngineCore - Universe Studio v4.0 Dark Cyber-Fantasy Theme
+   NovelEngineCore - Universe Studio v4.0 Dark Cyber-Fantasy & RPG Theme
    ========================================================================== */
 
 :root {
@@ -160,6 +160,11 @@ body {
   border-radius: var(--radius-full);
 }
 
+.discovery-bubble {
+  background: rgba(245, 158, 11, 0.3);
+  color: #fcd34d;
+}
+
 /* Controls */
 .header-controls {
   display: flex;
@@ -243,8 +248,8 @@ body {
   gap: 12px;
 }
 
-/* World Genesis Grid */
-.world-grid {
+/* Grids */
+.world-grid, .rpg-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 24px;
@@ -308,12 +313,6 @@ body {
   background: rgba(16, 185, 129, 0.2);
   color: #34d399;
   border: 1px solid rgba(16, 185, 129, 0.4);
-}
-
-.planned-badge {
-  background: rgba(245, 158, 11, 0.15);
-  color: #fbbf24;
-  border: 1px solid rgba(245, 158, 11, 0.3);
 }
 
 /* Forms */
@@ -571,10 +570,188 @@ body {
   border: 1px solid rgba(6, 182, 212, 0.2);
 }
 
+/* ==========================================================================
+   RPG Discovery Dashboard & Fate Choices Styles
+   ========================================================================== */
+
+.rpg-stats-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.rpg-char-stat-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rpg-stat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.rpg-char-name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.rpg-level-badge {
+  font-size: 0.72rem;
+  background: rgba(99, 102, 241, 0.2);
+  color: #a5b4fc;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
+.rpg-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stat-bar-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.progress-bar-bg {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.progress-hp {
+  height: 100%;
+  background: linear-gradient(90deg, #f43f5e 0%, #10b981 100%);
+  border-radius: var(--radius-full);
+}
+
+.rpg-sub-stats {
+  display: flex;
+  gap: 16px;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+}
+
+.discovery-entries-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 480px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.discovery-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.discovery-icon-box {
+  font-size: 1.4rem;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 8px;
+  border-radius: var(--radius-sm);
+}
+
+.discovery-title {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #fcd34d;
+}
+
+.discovery-desc {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 3px;
+  line-height: 1.4;
+}
+
+/* Cast Control & Fate Box in Drafting */
+.cast-control-box {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+}
+
+.fate-choices-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fate-title-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #fcd34d;
+}
+
+.fate-choices-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fate-choice-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fate-choice-card:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(99, 102, 241, 0.5);
+}
+
+.fate-choice-card.selected {
+  background: rgba(99, 102, 241, 0.12);
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.3);
+}
+
+.fate-header {
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: #e2e8f0;
+}
+
+.fate-desc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.fate-impact {
+  font-size: 0.72rem;
+  color: var(--accent-cyan);
+  font-weight: 600;
+}
+
 /* Drafting Studio Layout */
 .drafting-layout {
   display: grid;
-  grid-template-columns: 440px 1fr;
+  grid-template-columns: 460px 1fr;
   gap: 24px;
 }
 
@@ -588,7 +765,7 @@ body {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
 .scene-contract-card::before {
@@ -611,66 +788,12 @@ body {
   font-family: var(--font-display);
   font-size: 1.1rem;
   font-weight: 600;
-  margin-top: 4px;
-}
-
-.contract-meta {
-  font-size: 0.78rem;
-  color: var(--text-muted);
-}
-
-.contract-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.contract-item {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
-  padding: 10px 12px;
-}
-
-.contract-item .label {
-  display: block;
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: var(--accent-cyan);
-  text-transform: uppercase;
-  margin-bottom: 3px;
-}
-
-.contract-item p {
-  font-size: 0.84rem;
-  line-height: 1.45;
-}
-
-.constraints-item {
-  border-color: rgba(244, 63, 94, 0.25);
-  background: rgba(244, 63, 94, 0.03);
-}
-
-.constraints-item .label {
-  color: var(--accent-rose);
-}
-
-.constraints-item ul {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.constraints-item li {
-  font-size: 0.8rem;
-  color: #fecdd3;
 }
 
 .contract-actions {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   margin-top: 4px;
 }
 
@@ -688,7 +811,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
   padding-bottom: 12px;
   border-bottom: 1px solid var(--border-subtle);
 }
@@ -859,64 +982,6 @@ body {
   color: #86efac;
   word-break: break-word;
   display: block;
-}
-
-/* Plugins Grid */
-.plugins-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 20px;
-}
-
-.plugin-card {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  padding: 22px;
-  display: flex;
-  gap: 16px;
-  align-items: flex-start;
-}
-
-.plugin-card.active-plugin {
-  border-color: rgba(16, 185, 129, 0.3);
-}
-
-.plugin-icon {
-  font-size: 2rem;
-  background: rgba(255, 255, 255, 0.05);
-  padding: 12px;
-  border-radius: var(--radius-md);
-}
-
-.plugin-info {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  flex: 1;
-}
-
-.plugin-title {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.plugin-title h3 {
-  font-family: var(--font-display);
-  font-size: 1rem;
-}
-
-.plugin-desc {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  line-height: 1.45;
-}
-
-.galaxy-tag {
-  font-size: 0.72rem;
-  color: var(--accent-cyan);
-  font-weight: 600;
 }
 
 /* Buttons & Spinners */

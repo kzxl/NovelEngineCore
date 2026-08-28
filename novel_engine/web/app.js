@@ -1,30 +1,87 @@
 // ==========================================================================
-// NovelEngineCore - Universe Studio v4.0 Application Logic
+// NovelEngineCore - Universe Studio v4.0 Application Logic (Dynamic BE Models)
 // ==========================================================================
 
 let storyState = null;
 let currentDraft = null;
+let selectedFateChoice = null;
+let discoveryCodex = null;
+let availableModels = [];
 
 // Switch Active Galaxy View
 function switchGalaxy(viewName) {
-  const views = ['world', 'characters', 'novel', 'comic', 'plugins'];
+  const views = ['world', 'characters', 'rpg', 'novel', 'comic'];
   views.forEach(v => {
     const navBtn = document.getElementById(`nav-${v}`);
     const viewPane = document.getElementById(`galaxy-view-${v}`);
-    if (v === viewName) {
-      navBtn.classList.add('active');
-      viewPane.classList.add('active');
-    } else {
-      navBtn.classList.remove('active');
-      viewPane.classList.remove('active');
+    if (navBtn && viewPane) {
+      if (v === viewName) {
+        navBtn.classList.add('active');
+        viewPane.classList.add('active');
+      } else {
+        navBtn.classList.remove('active');
+        viewPane.classList.remove('active');
+      }
     }
   });
+
+  if (viewName === 'rpg') {
+    refreshDiscoveryCodex();
+  }
 }
 
 // Initial Fetch on Page Load
 document.addEventListener('DOMContentLoaded', async () => {
+  await fetchModels();
   await fetchState();
+  await refreshDiscoveryCodex();
 });
+
+// Dynamic Model Discovery from Backend
+async function fetchModels() {
+  const select = document.getElementById('model-select');
+  select.innerHTML = '<option value="">⏳ Đang quét danh sách model từ server...</option>';
+
+  try {
+    const res = await fetch('/api/models');
+    if (res.ok) {
+      availableModels = await res.json();
+      renderModelOptions(availableModels);
+    }
+  } catch (err) {
+    console.error("Could not fetch models from backend", err);
+    select.innerHTML = '<option value="ollama/qwen2.5-coder:3b">🟢 Local Ollama (qwen2.5-coder:3b)</option>';
+  }
+}
+
+function renderModelOptions(models) {
+  const select = document.getElementById('model-select');
+  select.innerHTML = '';
+
+  const groups = {};
+  models.forEach(m => {
+    if (!groups[m.category]) groups[m.category] = [];
+    groups[m.category].push(m);
+  });
+
+  for (const [category, items] of Object.entries(groups)) {
+    const optgroup = document.createElement('optgroup');
+    optgroup.label = category;
+
+    items.forEach((m, idx) => {
+      const opt = document.createElement('option');
+      opt.value = m.id;
+      opt.innerText = m.name;
+      if (!m.is_available) opt.disabled = true;
+      if (m.id.includes('qwen2.5-coder:3b') || (!select.value && m.is_available && idx === 0)) {
+        opt.selected = true;
+      }
+      optgroup.appendChild(opt);
+    });
+
+    select.appendChild(optgroup);
+  }
+}
 
 async function fetchState() {
   try {
@@ -34,7 +91,7 @@ async function fetchState() {
       renderAll();
     }
   } catch (err) {
-    console.warn("Could not fetch initial state, using local defaults.", err);
+    console.warn("Could not fetch initial state.", err);
   }
 }
 
@@ -46,7 +103,7 @@ function renderAll() {
 }
 
 // ----------------------------------------------------------------------
-// 1. World Genesis Galaxy Rendering & Actions
+// 1. World Genesis Galaxy
 // ----------------------------------------------------------------------
 
 function renderWorldView(world) {
@@ -124,8 +181,9 @@ function renderWorldView(world) {
 
 async function autoGenerateWorld() {
   const btn = document.getElementById('btn-auto-world');
+  const selectedModel = document.getElementById('model-select').value;
   btn.disabled = true;
-  btn.innerText = '⏳ AI Đang Xây Dựng Thế Giới...';
+  btn.innerText = `⏳ LLM (${selectedModel}) Đang Xây Dựng Thế Giới...`;
 
   try {
     const res = await fetch('/api/world/auto-generate', {
@@ -135,17 +193,20 @@ async function autoGenerateWorld() {
         title: document.getElementById('world-title').value,
         genre: document.getElementById('world-genre').value,
         logline: document.getElementById('world-logline').value,
-        provider_model: document.getElementById('model-select').value
+        provider_model: selectedModel
       })
     });
     if (res.ok) {
       const worldBible = await res.json();
       if (storyState) storyState.world_bible = worldBible;
       renderWorldView(worldBible);
-      alert('✓ Đã khởi tạo hoàn tất toàn bộ Thế Giới Quan!');
+      alert('✓ LLM đã tạo hoàn tất toàn bộ Thế Giới Quan!');
+    } else {
+      const errData = await res.json();
+      alert('Lỗi từ AI Model: ' + JSON.stringify(errData));
     }
   } catch (err) {
-    alert('Lỗi khởi tạo thế giới: ' + err.message);
+    alert('Lỗi kết nối tới AI Model: ' + err.message);
   } finally {
     btn.disabled = false;
     btn.innerText = '⚡ AI Tự Động Sinh Toàn Bộ Thế Giới';
@@ -176,7 +237,7 @@ async function autoEvolveWorld() {
 }
 
 // ----------------------------------------------------------------------
-// 2. Character Matrix Galaxy Rendering & Actions
+// 2. Character Matrix Galaxy
 // ----------------------------------------------------------------------
 
 function renderCharactersView(characters) {
@@ -199,7 +260,6 @@ function renderCharactersView(characters) {
 
     const roleClass = `role-${(c.role || 'npc').toLowerCase()}`;
     const avatarEmoji = c.role === 'Protagonist' ? '🥋' : c.role === 'Antagonist' ? '👹' : c.role === 'Mentor' ? '🧙‍♂️' : '🌸';
-
     const visualChips = (c.visual_tags || []).map(t => `<span class="visual-chip">${t}</span>`).join('');
 
     card.innerHTML = `
@@ -267,6 +327,9 @@ async function autoGenerateCharacters() {
     if (res.ok) {
       await fetchState();
       alert('✓ Đã tự động tạo dàn nhân vật hoàn chỉnh kèm Visual Consistency Tags!');
+    } else {
+      const err = await res.json();
+      alert('Lỗi tạo nhân vật từ AI: ' + JSON.stringify(err));
     }
   } catch (err) {
     alert('Lỗi tạo nhân vật: ' + err.message);
@@ -345,7 +408,105 @@ async function submitAddCharacter() {
 }
 
 // ----------------------------------------------------------------------
-// 3. Novel Drafting Galaxy (Viết Truyện & Lưu File Tự Động)
+// 3. RPG Discovery Codex Dashboard
+// ----------------------------------------------------------------------
+
+async function refreshDiscoveryCodex() {
+  try {
+    const res = await fetch('/api/discovery/codex');
+    if (res.ok) {
+      discoveryCodex = await res.json();
+      renderRPGCodex(discoveryCodex);
+      renderFateChoices(discoveryCodex.active_fate_options || []);
+    }
+  } catch (err) {
+    console.warn("Could not fetch discovery codex", err);
+  }
+}
+
+function renderRPGCodex(codex) {
+  if (!codex) return;
+  document.getElementById('discovery-count-badge').innerText = codex.total_discoveries || 0;
+
+  // Render Character RPG Stat Cards
+  const statsContainer = document.getElementById('rpg-stats-container');
+  statsContainer.innerHTML = '';
+
+  const stats = codex.rpg_character_stats || {};
+  for (const [charId, stat] of Object.entries(stats)) {
+    const charName = charId === 'char_lin_feng' ? 'Lâm Phong' : charId === 'char_elder_zhao' ? 'Đại Trưởng Lão Triệu' : charId;
+    const card = document.createElement('div');
+    card.className = 'rpg-char-stat-card';
+    card.innerHTML = `
+      <div class="rpg-stat-header">
+        <span class="rpg-char-name">${charName}</span>
+        <span class="rpg-level-badge">⚡ ${stat.level}</span>
+      </div>
+      <div class="rpg-bars">
+        <div class="stat-bar-label">
+          <span>Sinh Lực (HP)</span>
+          <span>${stat.hp_percent}%</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-hp" style="width: ${stat.hp_percent}%"></div>
+        </div>
+      </div>
+      <div class="rpg-sub-stats">
+        <span>🍀 Khí Vận: <strong>${stat.luck_score}/100</strong></span>
+        <span>🎖️ Danh Vọng: <strong>${stat.reputation}</strong></span>
+        <span>🏰 Phe: <strong>${stat.faction_alignment}</strong></span>
+      </div>
+    `;
+    statsContainer.appendChild(card);
+  }
+
+  // Render Discovery Entries
+  const entriesContainer = document.getElementById('discovery-entries-container');
+  entriesContainer.innerHTML = '';
+
+  (codex.entries || []).forEach(e => {
+    const itemCard = document.createElement('div');
+    itemCard.className = 'discovery-card';
+    const icon = e.discovery_type === 'ITEM_LOOT' ? '💎' : e.discovery_type === 'NEW_LOCATION' ? '📍' : '🤫';
+
+    itemCard.innerHTML = `
+      <div class="discovery-icon-box">${icon}</div>
+      <div>
+        <div class="discovery-title">${e.title}</div>
+        <p class="discovery-desc">${e.description}</p>
+        <span style="font-size:0.7rem; color:#64748b;">Khám phá trong: ${e.discovered_in_scene}</span>
+      </div>
+    `;
+    entriesContainer.appendChild(itemCard);
+  });
+}
+
+function renderFateChoices(choices) {
+  const container = document.getElementById('fate-choices-container');
+  container.innerHTML = '';
+
+  choices.forEach((fc, idx) => {
+    const card = document.createElement('div');
+    card.className = `fate-choice-card ${idx === 0 ? 'selected' : ''}`;
+    if (idx === 0) selectedFateChoice = fc;
+
+    card.onclick = () => {
+      document.querySelectorAll('.fate-choice-card').forEach(el => el.classList.remove('selected'));
+      card.classList.add('selected');
+      selectedFateChoice = fc;
+    };
+
+    card.innerHTML = `
+      <div class="fate-header">${fc.title}</div>
+      <div class="fate-desc">${fc.description}</div>
+      <div class="fate-impact">⚡ Tác động: ${fc.character_trait_impact} | ⚖️ ${fc.risk_reward}</div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+// ----------------------------------------------------------------------
+// 4. Novel Drafting Galaxy (Viết Truyện & Số Phận)
 // ----------------------------------------------------------------------
 
 async function generateScene() {
@@ -354,11 +515,19 @@ async function generateScene() {
   const proseOutput = document.getElementById('prose-output');
   const auditBadge = document.getElementById('audit-badge');
   const wordCountBadge = document.getElementById('word-count-badge');
+  const savedFileAlert = document.getElementById('file-saved-alert');
+
+  const selectedModel = document.getElementById('model-select').value;
 
   btn.disabled = true;
   indicator.classList.remove('hidden');
   auditBadge.classList.add('hidden');
-  proseOutput.innerHTML = '<p class="placeholder-text">⏳ Đang tổng hợp ngữ cảnh vi mô và kích hoạt Universe Gravitational Pipeline...</p>';
+  savedFileAlert.classList.add('hidden');
+  proseOutput.innerHTML = `<p class="placeholder-text">⏳ Đang gọi model thực tế <strong>[${selectedModel}]</strong> để sinh văn bản tiểu thuyết...</p>`;
+
+  const castSize = parseInt(document.getElementById('cast-size-select').value, 10);
+  const spotlightChar = document.getElementById('spotlight-char-select').value;
+  const fateDirective = selectedFateChoice ? selectedFateChoice.title + ": " + selectedFateChoice.description : "";
 
   const payload = {
     contract: {
@@ -367,20 +536,20 @@ async function generateScene() {
       scene_index: 1,
       location: "Lâm Gia - Hội Nghị Đường",
       time_of_day: "Hoàng hôn",
-      pov_character_id: "char_lin_feng",
-      present_characters: ["char_lin_feng"],
-      target_word_count: 1200,
-      narrative_goal: document.getElementById('contract-goal').innerText,
-      conflict_dynamic: document.getElementById('contract-conflict').innerText,
+      pov_character_id: spotlightChar,
+      present_characters: castSize === 1 ? [spotlightChar] : [spotlightChar, "char_elder_zhao"],
+      target_word_count: 800,
+      narrative_goal: `[Số lượng nhân vật: ${castSize}] ` + (fateDirective || "Lâm Phong ném linh thạch trả nợ để chuộc lại Vân Hà Ngọc Bội."),
+      conflict_dynamic: "Đại Trưởng Lão Triệu ép giá tăng gấp đôi lên 1,000 linh thạch và công khai sỉ nhục.",
       scene_resolution: "Lâm Phong dằn mặt trưởng lão bằng cách ném đủ linh thạch.",
-      cliffhanger_hook: document.getElementById('contract-hook').innerText,
+      cliffhanger_hook: "Triệu trưởng lão nhận ra luồng linh khí cổ xưa trên ngọc bội và ra lệnh phong tỏa toàn bộ lối ra.",
       hard_constraints: [
         "Lâm Phong chưa đạt Trúc Cơ, TUYỆT ĐỐI KHÔNG được giết Trưởng Lão trong cảnh này.",
         "Không được để lộ danh tính linh hồn trong chiếc nhẫn.",
         "Văn phong sắc sảo, dồn dập (Show, don't tell)."
       ]
     },
-    provider_model: document.getElementById('model-select').value,
+    provider_model: selectedModel,
     generate_comic: true
   };
 
@@ -394,12 +563,13 @@ async function generateScene() {
     if (res.ok) {
       const data = await res.json();
       renderDraft(data);
+      await refreshDiscoveryCodex();
     } else {
-      renderMockDraft();
+      const err = await res.json();
+      proseOutput.innerHTML = `<p style="color: #f43f5e;">❌ Lỗi khi sinh chương từ model [${selectedModel}]: ${JSON.stringify(err)}</p>`;
     }
   } catch (err) {
-    console.warn("Direct draft failed, fallback mock draft", err);
-    renderMockDraft();
+    proseOutput.innerHTML = `<p style="color: #f43f5e;">❌ Lỗi kết nối tới AI Engine: ${err.message}</p>`;
   } finally {
     btn.disabled = false;
     indicator.classList.add('hidden');
@@ -411,9 +581,12 @@ function renderDraft(data) {
   const proseOutput = document.getElementById('prose-output');
   const auditBadge = document.getElementById('audit-badge');
   const wordCountBadge = document.getElementById('word-count-badge');
+  const savedFileAlert = document.getElementById('file-saved-alert');
 
   proseOutput.innerText = data.prose_content;
   auditBadge.classList.remove('hidden');
+  savedFileAlert.classList.remove('hidden');
+
   const words = data.prose_content.trim().split(/\s+/).length;
   wordCountBadge.innerText = `${words} từ`;
 
@@ -421,48 +594,6 @@ function renderDraft(data) {
   if (data.comic_storyboard && data.comic_storyboard.panels) {
     renderComicPanels(data.comic_storyboard.panels);
   }
-}
-
-function renderMockDraft() {
-  const mockProse = `Hoàng hôn đỏ quạch như máu nhuộm đỏ cả khoảng sân của Lâm Gia. Lâm Phong đứng thẳng người giữa sảnh Nghị Sự, bờ vai phải vẫn còn rỉ máu từ vết thương cũ, nhưng đôi mắt đen nhánh của chàng lại phẳng lặng như mặt hồ ngàn năm.
-
-"Năm trăm linh thạch hạ phẩm, một viên không thiếu!" – Giọng nói của Lâm Phong vang lên đanh gọn. Chàng giơ tay, một túi gấm nặng trịch rơi xuống bàn gỗ lim phát ra tiếng 'bộp' giòn giã.
-
-Phía trên chủ vị, Đại Trưởng Lão Triệu nheo cặp mắt ưng, khóe môi khẽ nhếch lên nụ cười mỉa mai: "Lâm Phong, ngươi đùa với lão phu sao? Giá của Vân Hà Ngọc Bội hôm nay... là một ngàn linh thạch!"
-
-Sát khí vô hình bỗng chốc tràn ngập cả gian phòng. Lâm Phong không lùi nửa bước, bàn tay trái giấu trong tay áo khẽ chạm vào chiếc nhẫn hắc thiết, ánh mắt lạnh băng khóa chặt vào gã trưởng lão tham lam.`;
-
-  const mockPanels = [
-    {
-      panel_index: 1,
-      camera_angle: "Wide Shot (Toàn cảnh)",
-      visual_composition: "Góc rộng từ trên cao nhìn xuống sảnh đường Lâm Gia, hoàng hôn đỏ rực chiếu qua ô cửa sổ gỗ, Lâm Phong đứng cô độc đối diện hàng trưởng lão.",
-      dialogue: [{ "Lâm Phong": "Năm trăm linh thạch, một viên không thiếu!" }],
-      sound_effects_sfx: "BỘP!",
-      image_prompt_for_ai: "Wide cinematic shot, ancient chinese xianxia martial hall, sunset crimson light, young cultivator with black ponytail and ragged blue robes facing intimidating elders on thrones, dynamic lighting, 8k anime artstyle"
-    },
-    {
-      panel_index: 2,
-      camera_angle: "Close-up (Cận cảnh)",
-      visual_composition: "Cận cảnh nụ cười đểu cáng của Đại Trưởng Lão Triệu, ánh mắt thâm độc, tay vuốt chòm râu dê.",
-      dialogue: [{ "Đại Trưởng Lão": "Hôm nay giá là một ngàn linh thạch!" }],
-      sound_effects_sfx: "HẮC HẮC...",
-      image_prompt_for_ai: "Close up shot of cunning old elder with long grey goatee, sinister smirk, luxurious embroidered silk robes, glowing jade ornaments, intense dramatic rim light, webtoon illustration"
-    },
-    {
-      panel_index: 3,
-      camera_angle: "Dutch Angle (Góc nghiêng căng thẳng)",
-      visual_composition: "Góc nghiêng kịch tính đặc tả đôi mắt sắc lẹm của Lâm Phong, tay nắm chặt lại, luồng linh khí mờ ảo bắt đầu dao động quanh ngón tay.",
-      dialogue: [{ "Lâm Phong": "..." }],
-      sound_effects_sfx: "RẮC!",
-      image_prompt_for_ai: "Dutch angle extreme focus on protagonist cold sharp eyes, black hair fluttering, subtle dark spiritual aura rising from iron ring on finger, high tension, manhwa action style"
-    }
-  ];
-
-  renderDraft({
-    prose_content: mockProse,
-    comic_storyboard: { panels: mockPanels }
-  });
 }
 
 function renderComicPanels(panels) {
