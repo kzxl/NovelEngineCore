@@ -149,6 +149,7 @@ class SceneContract(BaseModel):
     target_word_count: int = 1200
     min_word_count: int = 800
     max_word_count: int = 1500
+    language: str = "Tiếng Việt"
     narrative_goal: str
     conflict_dynamic: str
     scene_resolution: str
@@ -229,6 +230,7 @@ class StoryState(BaseModel):
     title: str
     logline: str
     genre: str
+    language: str = "Tiếng Việt"
     world_bible: WorldBible
     characters: Dict[str, CharacterDossier] = Field(default_factory=dict)
     chapters: List[Chapter] = Field(default_factory=list)

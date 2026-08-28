@@ -279,6 +279,7 @@ class InitStoryRequest(BaseModel):
     title: str = "Thương Lam Tiên Tôn"
     logline: str = "Một thiếu niên phế vật tìm được chiếc nhẫn cổ quật khởi đối đầu tông môn."
     genre: str = "Xianxia"
+    language: str = "Tiếng Việt"
     provider_model: str = "ollama/qwen2.5-coder:3b"
     api_key: Optional[str] = None
     base_url: Optional[str] = None
@@ -295,7 +296,7 @@ async def init_story(req: InitStoryRequest):
     global _engine
     _engine = None
     engine = get_or_create_engine(req.provider_model, req.api_key, req.base_url)
-    state = await engine.initialize_story(title=req.title, logline=req.logline, genre=req.genre)
+    state = await engine.initialize_story(title=req.title, logline=req.logline, genre=req.genre, language=req.language)
     _storage.save_story_state(state)
     return state
 
@@ -358,6 +359,7 @@ _active_events: List[PlotEvent] = [
 class AutoEventRequest(BaseModel):
     count: int = 3
     focus_theme: Optional[str] = "Tranh đoạt tài nguyên, bí cảnh xuất thế, ân oán tông môn"
+    language: str = "Tiếng Việt"
 
 
 @app.get("/api/events", response_model=List[PlotEvent])
@@ -372,9 +374,9 @@ async def auto_generate_events(req: AutoEventRequest):
     global _active_events
     engine = get_or_create_engine()
     if not engine.state:
-        await engine.initialize_story("Thương Lam Giới", "Tu tiên", "Xianxia")
+        await engine.initialize_story("Thương Lam Giới", "Tu tiên", "Xianxia", language=req.language)
     
-    events = await engine.auto_generate_plot_events(count=req.count, focus_theme=req.focus_theme)
+    events = await engine.auto_generate_plot_events(count=req.count, focus_theme=req.focus_theme, language=req.language)
     _active_events = events
     _storage.save_plot_events(engine.state.story_id, _active_events)
     return _active_events
@@ -388,27 +390,29 @@ class AutoWorldRequest(BaseModel):
     title: str = "Thương Lam Giới"
     genre: str = "Xianxia"
     logline: str = "Thế giới tu tiên mạt pháp ngập tràn bí ẩn."
+    language: str = "Tiếng Việt"
     provider_model: str = "ollama/qwen2.5-coder:3b"
 
 
 @app.post("/api/world/auto-generate", response_model=WorldBible)
 async def auto_generate_world(req: AutoWorldRequest):
     engine = get_or_create_engine(req.provider_model)
-    state = await engine.initialize_story(title=req.title, logline=req.logline, genre=req.genre)
+    state = await engine.initialize_story(title=req.title, logline=req.logline, genre=req.genre, language=req.language)
     _storage.save_story_state(state)
     return state.world_bible
 
 
 class EvolveWorldRequest(BaseModel):
     focus_topic: str = "Các Tông Môn Bí Ẩn & Cấm Địa Cổ Xưa"
+    language: str = "Tiếng Việt"
 
 
 @app.post("/api/world/evolve", response_model=WorldExpansionResult)
 async def auto_evolve_world(req: EvolveWorldRequest):
     engine = get_or_create_engine()
     if not engine.state:
-        await engine.initialize_story("Thương Lam Giới", "Tu tiên", "Xianxia")
-    result = await engine.auto_evolve_world(focus_topic=req.focus_topic)
+        await engine.initialize_story("Thương Lam Giới", "Tu tiên", "Xianxia", language=req.language)
+    result = await engine.auto_evolve_world(focus_topic=req.focus_topic, language=req.language)
     _storage.save_story_state(engine.state)
     return result
 
@@ -416,14 +420,15 @@ async def auto_evolve_world(req: EvolveWorldRequest):
 class AutoCharRequest(BaseModel):
     count: int = 4
     roles_focus: str = "Protagonist, Antagonist, Mentor, Sidekick"
+    language: str = "Tiếng Việt"
 
 
 @app.post("/api/character/auto-generate", response_model=List[CharacterDossier])
 async def auto_generate_characters(req: AutoCharRequest):
     engine = get_or_create_engine()
     if not engine.state:
-        await engine.initialize_story("Thương Lam Giới", "Tu tiên", "Xianxia")
-    chars = await engine.auto_generate_characters(count=req.count, roles_focus=req.roles_focus)
+        await engine.initialize_story("Thương Lam Giới", "Tu tiên", "Xianxia", language=req.language)
+    chars = await engine.auto_generate_characters(count=req.count, roles_focus=req.roles_focus, language=req.language)
     _storage.save_story_state(engine.state)
     return chars
 

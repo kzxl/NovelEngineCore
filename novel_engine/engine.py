@@ -25,7 +25,8 @@ from novel_engine.core.state import (
     SceneContract,
     SceneDraft,
     GeneratedCharacterList,
-    WorldExpansionResult
+    WorldExpansionResult,
+    UnifiedSceneResponse
 )
 from novel_engine.core.plot_events import PlotEvent, GeneratedEventList
 from novel_engine.core.continuity import StorySpine, SceneSummary, PlotThread
@@ -53,6 +54,7 @@ class NovelDirectorEngine:
         title: str,
         logline: str,
         genre: str,
+        language: str = "Tiếng Việt",
         world_bible: Optional[WorldBible] = None
     ) -> StoryState:
         """Initializes story state and notifies the Universe EventBus."""
@@ -61,6 +63,7 @@ class NovelDirectorEngine:
                 f"Create a rich, comprehensive WorldBible for a novel titled '{title}'.\n"
                 f"Genre: {genre}\n"
                 f"Premise / Logline: {logline}\n"
+                f"MANDATORY LANGUAGE: All output text and JSON fields MUST be written in {language}.\n"
                 f"Define cosmology, strict power progression limits, immutable canon laws, key factions, and locations."
             )
             world_bible = await self.adapter.generate_structured(
@@ -75,6 +78,7 @@ class NovelDirectorEngine:
             title=title,
             logline=logline,
             genre=genre,
+            language=language,
             world_bible=world_bible,
             characters={},
             chapters=[]
@@ -82,7 +86,7 @@ class NovelDirectorEngine:
 
         # 1. LLM dynamically generates initial cast (Protagonist, Antagonist, Mentor)
         try:
-            initial_chars = await self.auto_generate_characters(count=3, roles_focus="Protagonist, Antagonist, Mentor")
+            initial_chars = await self.auto_generate_characters(count=3, roles_focus="Protagonist, Antagonist, Mentor", language=language)
         except Exception as e:
             print(f"[NovelEngine] Character auto-generation notice: {e}")
             initial_chars = []
@@ -120,11 +124,17 @@ class NovelDirectorEngine:
 
         return self.state
 
-    async def auto_generate_characters(self, count: int = 3, roles_focus: str = "Protagonist, Antagonist, Mentor") -> List[CharacterDossier]:
+    async def auto_generate_characters(
+        self,
+        count: int = 3,
+        roles_focus: str = "Protagonist, Antagonist, Mentor",
+        language: Optional[str] = None
+    ) -> List[CharacterDossier]:
         """Automatically generates a cast of consistent, multi-dimensional characters."""
         if not self.state:
             raise ValueError("StoryState not initialized.")
 
+        lang = language or self.state.language or "Tiếng Việt"
         prompt = f"""
 You are a master character designer and novelist.
 Based on the following World Bible, generate {count} unique, compelling characters.
@@ -133,6 +143,7 @@ WORLD TITLE: {self.state.world_bible.title}
 GENRE: {self.state.genre}
 POWER SYSTEM: {self.state.world_bible.energy_source}
 ROLES FOCUS: {roles_focus}
+MANDATORY LANGUAGE: All output text (names, motivations, flaws, speech styles, visual tags) MUST be written in {lang}.
 
 Each character must have:
 - Distinct name and role (Protagonist, Antagonist, Mentor, Deuteragonist, Sidekick)
@@ -154,17 +165,23 @@ Output JSON conforming to GeneratedCharacterList schema.
 
         return result.characters
 
-    async def auto_evolve_world(self, focus_topic: str = "Secret Factions & Ancient Locations") -> WorldExpansionResult:
+    async def auto_evolve_world(
+        self,
+        focus_topic: str = "Secret Factions & Ancient Locations",
+        language: Optional[str] = None
+    ) -> WorldExpansionResult:
         """Expands and enriches the existing world with new lore, locations, and factions."""
         if not self.state:
             raise ValueError("StoryState not initialized.")
 
+        lang = language or self.state.language or "Tiếng Việt"
         prompt = f"""
 You are a master worldbuilder. Expand the universe lore for:
 WORLD: {self.state.world_bible.title}
 GENRE: {self.state.genre}
 ENERGY SOURCE: {self.state.world_bible.energy_source}
 FOCUS: {focus_topic}
+MANDATORY LANGUAGE: All faction names, locations, and rules MUST be written in {lang}.
 
 Generate 2 new mysterious factions, 2 dangerous uncharted locations, and 2 new canon rules.
 Output JSON conforming to WorldExpansionResult schema.
@@ -182,11 +199,17 @@ Output JSON conforming to WorldExpansionResult schema.
 
         return result
 
-    async def auto_generate_plot_events(self, count: int = 3, focus_theme: Optional[str] = None) -> List[PlotEvent]:
+    async def auto_generate_plot_events(
+        self,
+        count: int = 3,
+        focus_theme: Optional[str] = None,
+        language: Optional[str] = None
+    ) -> List[PlotEvent]:
         """Generates dynamic world events, crises, and plot twists based on world state and characters."""
         if not self.state:
             raise ValueError("StoryState not initialized.")
 
+        lang = language or self.state.language or "Tiếng Việt"
         char_summary = "\n".join(
             f"- {c.name} ({c.role.value}): Mục tiêu={c.personality.core_motivation}, Điểm yếu={c.personality.fatal_flaw}, Bí mật={c.personality.hidden_secret}"
             for c in self.state.characters.values()
@@ -200,6 +223,7 @@ EXISTING CHARACTERS:
 {char_summary or "Chưa có nhân vật cụ thể"}
 
 THEME FOCUS: {focus_theme or "Tranh đoạt tài nguyên, bí cảnh xuất thế, ân oán tông môn"}
+MANDATORY LANGUAGE: All event titles, causes, impacts, goals, conflicts, and cliffhangers MUST be written in {lang}.
 
 Generate {count} dynamic, high-stakes plot events/crises (Biến cố thế giới) that will organically pull the characters into intense conflict.
 Each event must contain suggested scene hooks (narrative_goal, conflict, cliffhanger).
@@ -245,12 +269,13 @@ Output JSON conforming strictly to GeneratedEventList schema.
         )
 
         # 3. Draft Unified Scene in Single-Pass JSON
+        lang = active_contract.language or (self.state.language if self.state else "Tiếng Việt")
         unified_prompt = (
             prompt
-            + "\n\nQUY ĐỊNH KẾT QUẢ TRẢ VỀ:\n"
-            + "Hãy xuất ra định dạng JSON tuân thủ schema UnifiedSceneResponse với đầy đủ các trường: "
-            + "scene_title, prose_content, key_events, discovered_items, discovered_locations, discovered_secrets, "
-            + "hp_change, reputation_change, luck_change, ending_cliffhanger, next_fate_choices."
+            + f"\n\n[OUTPUT FORMAT & LANGUAGE INSTRUCTION]\n"
+            + f"Output strictly a valid JSON matching UnifiedSceneResponse schema.\n"
+            + f"MANDATORY LANGUAGE: All generated story content (prose_content, key_events, discovered_items, discovered_locations, discovered_secrets, ending_cliffhanger, next_fate_choices) MUST be written in {lang}.\n"
+            + f"Ensure prose_content is a complete, polished scene with {active_contract.min_word_count}-{active_contract.max_word_count} words in {lang}."
         )
 
         try:

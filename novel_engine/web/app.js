@@ -33,6 +33,24 @@ function switchGalaxy(viewName) {
   }
 }
 
+// Language Controls & Synchronization
+function getSelectedLanguage() {
+  const el = document.getElementById('select-global-language') || document.getElementById('select-scene-language');
+  return el ? el.value : 'Tiếng Việt';
+}
+
+function syncGlobalLanguage() {
+  const globalVal = document.getElementById('select-global-language').value;
+  const sceneSelect = document.getElementById('select-scene-language');
+  if (sceneSelect) sceneSelect.value = globalVal;
+}
+
+function syncSceneLanguageToGlobal() {
+  const sceneVal = document.getElementById('select-scene-language').value;
+  const globalSelect = document.getElementById('select-global-language');
+  if (globalSelect) globalSelect.value = sceneVal;
+}
+
 // Initial Fetch on Page Load
 document.addEventListener('DOMContentLoaded', async () => {
   await fetchModels();
@@ -279,6 +297,7 @@ async function autoGenerateWorld() {
         title: document.getElementById('world-title').value,
         genre: document.getElementById('world-genre').value,
         logline: document.getElementById('world-logline').value,
+        language: getSelectedLanguage(),
         provider_model: selectedModel
       })
     });
@@ -308,7 +327,10 @@ async function autoEvolveWorld() {
     const res = await fetch('/api/world/evolve', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ focus_topic: 'Tông môn cổ xưa & Cấm địa ngàn năm' })
+      body: JSON.stringify({
+        focus_topic: 'Tông môn cổ xưa & Cấm địa ngàn năm',
+        language: getSelectedLanguage()
+      })
     });
     if (res.ok) {
       await fetchState();
@@ -425,7 +447,8 @@ async function autoGenerateCharacters() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         count: 4,
-        roles_focus: 'Protagonist, Antagonist, Mentor, Sidekick'
+        roles_focus: 'Protagonist, Antagonist, Mentor, Sidekick',
+        language: getSelectedLanguage()
       })
     });
     if (res.ok) {
@@ -597,7 +620,11 @@ async function autoGenerateEvents() {
     const res = await fetch('/api/events/auto-generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ count: count, focus_theme: theme })
+      body: JSON.stringify({ 
+        count: count, 
+        focus_theme: theme,
+        language: getSelectedLanguage()
+      })
     });
 
     if (res.ok) {
@@ -866,6 +893,7 @@ async function generateScene() {
       target_word_count: lengthLimits.target_words,
       min_word_count: lengthLimits.min_words,
       max_word_count: lengthLimits.max_words,
+      language: getSelectedLanguage(),
       narrative_goal: `[Số lượng nhân vật: ${presentChars.length}] ` + (fateDirective || `${activeCharName} đối mặt với xung đột đầu tiên tại ${locationName}.`),
       conflict_dynamic: `Các thế lực đối lập tìm cách áp chế và cản trở ${activeCharName}.`,
       scene_resolution: `${activeCharName} thể hiện bản lĩnh và vượt qua kiếp nạn tạm thời.`,

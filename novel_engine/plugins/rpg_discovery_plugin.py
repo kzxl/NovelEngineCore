@@ -235,23 +235,28 @@ class RPGDiscoveryPlugin(INovelPlugin):
         if not self._adapter:
             return None
 
+        lang = draft.contract.language or "Tiếng Việt"
         prompt = f"""
-Bạn là chuyên gia phân tích RPG Narrative Engine. Hãy đọc kỹ đoạn văn bản tiểu thuyết dưới đây và trích xuất các thông tin thực tế xuất hiện trong truyện:
+You are an expert RPG narrative analyst and game mechanics engineer.
+Analyze the following story prose excerpt and extract tangible story discoveries, character stat changes, and 3 organic Fate Choices.
 
-[NỘI DUNG ĐOẠN VĂN]:
+[STORY PROSE EXCERPT]
 {draft.prose_content}
 
-[HỢP ĐỒNG CẢNH]:
-- Địa điểm: {draft.contract.location}
-- Nút thắt kết cảnh: {draft.contract.cliffhanger_hook}
-- Nhân vật chính: {draft.contract.pov_character_id}
+[SCENE METADATA]
+- Location: {draft.contract.location}
+- Ending Cliffhanger: {draft.contract.cliffhanger_hook}
+- POV Character: {draft.contract.pov_character_id}
 
-HÃY TRÍCH XUẤT:
-1. discoveries: Các vật phẩm/pháp bảo nhặt được (ITEM_LOOT), địa danh xuất hiện (NEW_LOCATION), hoặc bí mật hé lộ (SECRET_CLUE) THỰC TẾ trong đoạn văn trên.
-2. stat_updates: Biến động máu (hp_loss_or_gain), danh vọng (reputation_gain), cảnh giới tu vi của nhân vật chính.
-3. next_fate_choices: Đề xuất đúng 3 ngã rẽ số phận (Fate Choices) cho chương tiếp theo dựa trên đúng nút thắt kết cảnh (cliffhanger) của đoạn văn bản trên.
+[MANDATORY TARGET LANGUAGE]
+All extracted item titles, descriptions, location names, and fate choice descriptions MUST be written in {lang}.
 
-Xuất ra định dạng JSON tuân thủ schema SceneRPGExtractionResult.
+[EXTRACTION GOALS]
+1. discoveries: Genuine items/artifacts looted (ITEM_LOOT), new locations visited (NEW_LOCATION), or lore secrets revealed (SECRET_CLUE) in the excerpt.
+2. stat_updates: Realistic changes to HP, reputation, or cultivation power tier based on what happened.
+3. next_fate_choices: Exactly 3 high-stakes, logically divergent Fate Choices for the next chapter based on the ending cliffhanger.
+
+Output strictly a valid JSON matching the SceneRPGExtractionResult schema.
 """
         try:
             res = await self._adapter.generate_structured(

@@ -45,6 +45,14 @@
 
       <!-- Right Controls -->
       <div class="header-controls">
+        <div class="lang-badge">
+          <select id="select-global-language" class="glow-select" onchange="syncGlobalLanguage()">
+            <option value="Tiếng Việt" selected>🇻🇳 Tiếng Việt</option>
+            <option value="English">🇺🇸 English</option>
+            <option value="中文">🇨🇳 中文</option>
+            <option value="日本語">🇯🇵 日本語</option>
+          </select>
+        </div>
         <div class="model-badge">
           <span id="model-status-dot" class="pulse-dot"></span>
           <select id="model-select" class="glow-select" onchange="resetModelTestStatus()">
@@ -301,11 +309,11 @@
               </div>
             </div>
 
-            <!-- Chapter Length Limit Control (Giới hạn độ dài chương) -->
+            <!-- Chapter Length & Language Limit Control -->
             <div class="length-control-box">
               <div class="form-row">
                 <div class="form-group half">
-                  <label>📏 Giới Hạn Độ Dài Chương (Word Count Limit):</label>
+                  <label>📏 Giới Hạn Độ Dài Chương (Word Count):</label>
                   <select id="length-preset-select" class="input-glow" onchange="onLengthPresetChange()">
                     <option value="short">⚡ Ngắn / Webtoon Beat (400 - 700 từ)</option>
                     <option value="standard" selected>📖 Tiêu Chuẩn Webnovel (800 - 1,400 từ)</option>
@@ -313,12 +321,24 @@
                     <option value="custom">⚙️ Tùy Chỉnh Giới Hạn Riêng...</option>
                   </select>
                 </div>
-                <div class="form-group half" id="custom-word-range" style="display: none;">
-                  <label>Tối thiểu & Tối đa (Min - Max từ):</label>
-                  <div class="form-row">
-                    <input type="number" id="min-words-input" class="input-glow" value="800" min="200" max="5000" placeholder="Min">
-                    <input type="number" id="max-words-input" class="input-glow" value="1400" min="300" max="8000" placeholder="Max">
-                  </div>
+                <div class="form-group half">
+                  <label>🌐 Ngôn Ngữ Trả Về (Output Language):</label>
+                  <select id="select-scene-language" class="input-glow" onchange="syncSceneLanguageToGlobal()">
+                    <option value="Tiếng Việt" selected>🇻🇳 Tiếng Việt (Vietnamese)</option>
+                    <option value="English">🇺🇸 English</option>
+                    <option value="中文">🇨🇳 中文 (Chinese)</option>
+                    <option value="日本語">🇯🇵 日本語 (Japanese)</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-row" id="custom-word-range" style="display: none; margin-top: 10px;">
+                <div class="form-group half">
+                  <label>Số từ tối thiểu (Min Words):</label>
+                  <input type="number" id="min-words-input" class="input-glow" value="800" min="200" max="5000" placeholder="Min">
+                </div>
+                <div class="form-group half">
+                  <label>Số từ tối đa (Max Words):</label>
+                  <input type="number" id="max-words-input" class="input-glow" value="1400" min="300" max="8000" placeholder="Max">
                 </div>
               </div>
             </div>
